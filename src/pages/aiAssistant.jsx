@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { CURRENT_CHAT_KEY, HISTORY_KEY } from '../utils/assistantChatStorage.js'
 import '../styles/aiAssistant.css'
 
 // Buttons the AI can attach to a reply. Ids match the page ids in App.jsx,
@@ -32,9 +33,6 @@ const exampleConversations = [
     question: 'Where did most of my money go?'
   }
 ]
-
-const CURRENT_CHAT_KEY = 'cashflowiq.chat.current'
-const HISTORY_KEY = 'cashflowiq.chat.history'
 
 function loadJson(key, fallback) {
   try {
@@ -167,8 +165,25 @@ const fallbackSuggestions = [
 
 
 // Scripted backup replies, used only when the AI service can't be reached.
-function getAssistantReply(question) {
+function getAssistantReply(question, dataPermissions) {
   const q = question.toLowerCase()
+
+  const asksAboutTransactions = /(?:my|this|that|a|an|recent|unrecognised|unrecognized|suspicious)\s+(?:bank\s+)?(?:transaction|payment|purchase|charge)|(?:transaction|payment|purchase|charge).*(?:flagged|unrecognised|unrecognized|merchant|\$850)|(?:fraud|suspicious).*(?:payment|transaction|charge)/.test(q)
+  if (!dataPermissions.assistantCanReadTransactions && asksAboutTransactions) {
+    return 'I can’t access transaction details because that permission is turned off. You can change it in Settings > AI and your data. I can still provide general guidance.'
+  }
+
+  const asksForSpendingInsights = /\b(my budget|budget left|budget remaining|my spending|spend(?:ing)? so far|subscriptions?|my expenses|where did (?:most of )?(?:my )?(?:money|spending) go|how much.*(?:spent|budget))\b/.test(q)
+    || /\b(spend|spending|expense|expenses)\b/.test(q)
+    || /\b(save an extra \$?2,?000|my savings goal|how much.*saved)\b/.test(q)
+  if (!dataPermissions.spendingInsights && asksForSpendingInsights) {
+    return 'Spending insights are turned off, so I can’t access your budget, categories or subscriptions. You can change this in Settings > AI and your data. I can still answer general money questions.'
+  }
+
+  const asksAboutPersonalGoal = /\b(japan|holiday|goal|saved|planned contribution)\b/.test(q)
+  if (!dataPermissions.spendingInsights && asksAboutPersonalGoal) {
+    return 'I can’t access your savings-goal details while spending insights are turned off. You can change this in Settings > AI and your data.'
+  }
 
   if (q.includes('subscription')) {
     return "You currently have 3 recurring subscriptions costing $68.97 per month. Netflix is $25.99, Spotify is $13.99 and iCloud+ is $28.99. Netflix is marked for review because there has been no activity in the last 30 days. If you no longer use it, reviewing that subscription could save you $25.99 per month, or $311.88 per year. Remember to check before cancelling anything."
@@ -184,6 +199,10 @@ function getAssistantReply(question) {
     q.includes('suspicious') ||
     q.includes('transaction')
   ) {
+    if (!dataPermissions.assistantCanReadTransactions) {
+      return 'I can offer general security guidance, but I can’t access specific transaction details because that permission is turned off. For a payment you don’t recognise, contact the bank through its official channels.'
+    }
+
     return "Your demo security monitor flagged an $850 payment to an unfamiliar online store as high risk. The amount and unfamiliar merchant triggered the alert. If this were a real transaction, check your account activity and contact your bank through its official channels if you don't recognise it. This is simulated activity, not a real bank alert."
   }
 
@@ -208,6 +227,10 @@ function getAssistantReply(question) {
     q.includes('save') ||
     q.includes('saving')
   ) {
+    if (!dataPermissions.spendingInsights) {
+      return 'I can share general saving strategies, but I can’t use your budget or spending details while spending insights are turned off.'
+    }
+
     return "To save an additional $2,000 over 12 months, you would need to put aside approximately $167 per month. You currently have $650 remaining in your monthly budget. You could consider allocating part of that amount towards your savings goal while keeping some available for unexpected expenses."
   }
 
@@ -216,6 +239,10 @@ function getAssistantReply(question) {
     q.includes('remaining') ||
     q.includes('left')
   ) {
+    if (!dataPermissions.spendingInsights) {
+      return 'Spending insights are turned off, so I can’t access your budget details. You can change this in Settings > AI and your data.'
+    }
+
     return "Your monthly budget is $4,800, and you've spent $4,150 so far. That leaves $650 remaining, meaning you've used approximately 86% of your budget. Keep an eye on flexible spending for the rest of the month."
   }
 
@@ -237,10 +264,10 @@ function getFallbackExtras(question) {
   return { actions, urgent }
 }
 
-function CategoryTabs({ activeId, onSelect }) {
+function CategoryTabs({ activeId, onSelect, categoriesToShow = categories }) {
   return (
     <div className="ai-category-tabs" role="tablist">
-      {categories.map(category => (
+      {categoriesToShow.map(category => (
         <button
           key={category.id}
           role="tab"
@@ -256,7 +283,14 @@ function CategoryTabs({ activeId, onSelect }) {
   )
 }
 
-function AIAssistant({ onNavigate }) {
+function AIAssistant({ onNavigate, dataPermissions = {} }) {
+  const effectiveDataPermissions = {
+    spendingInsights: true,
+    homeSuggestions: true,
+    assistantCanReadTransactions: true,
+    personalizedOffers: true,
+    ...dataPermissions
+  }
   const [messages, setMessages] = useState(() => loadJson(CURRENT_CHAT_KEY, []))
   const [history, setHistory] = useState(() => loadJson(HISTORY_KEY, []))
   const [input, setInput] = useState('')
@@ -275,12 +309,23 @@ function AIAssistant({ onNavigate }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [messages, isLoading])
 
-  const currentCategory = categories.find(c => c.id === activeCategory)
+  const visibleCategories = categories.filter(
+    category => effectiveDataPermissions.spendingInsights || category.id !== 'money'
+  )
+  const currentCategory = visibleCategories.find(c => c.id === activeCategory)
+    || visibleCategories[0]
 
   // Ask the AI to answer the conversation so far (which must end with a user message).
   const requestReply = async (conversation) => {
     setMessages(conversation)
     setIsLoading(true)
+
+    const dataAccessIsRestricted = !effectiveDataPermissions.spendingInsights
+      || !effectiveDataPermissions.assistantCanReadTransactions
+      || !effectiveDataPermissions.personalizedOffers
+    const requestConversation = dataAccessIsRestricted
+      ? conversation.slice(-1)
+      : conversation
 
     let answer
     try {
@@ -288,15 +333,24 @@ function AIAssistant({ onNavigate }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: conversation.map(({ role, text }) => ({ role, text }))
+          messages: requestConversation.map(({ role, text }) => ({ role, text })),
+          dataPermissions: effectiveDataPermissions
         })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
       answer = {
         text: data.reply,
-        suggestions: data.suggestions ?? [],
-        actions: data.actions ?? [],
+        suggestions: (data.suggestions ?? []).filter(suggestion => {
+          const text = suggestion.toLowerCase()
+          return (effectiveDataPermissions.spendingInsights
+              || !/budget|spend|subscription|expense|money go/.test(text))
+            && (effectiveDataPermissions.assistantCanReadTransactions
+              || !/transaction|merchant|purchase|payment|charge|flagged/.test(text))
+        }),
+        actions: (data.actions ?? []).filter(action =>
+          action !== 'insights' || effectiveDataPermissions.spendingInsights
+        ),
         urgent: Boolean(data.urgent)
       }
       setMode('Gemini AI')
@@ -304,10 +358,17 @@ function AIAssistant({ onNavigate }) {
       // Fall back to the scripted demo replies so the prototype still works offline.
       console.warn('AI unavailable, using demo replies:', err.message)
       const question = conversation[conversation.length - 1].text
+      const fallbackExtras = getFallbackExtras(question)
+      if (!effectiveDataPermissions.spendingInsights) {
+        fallbackExtras.actions = fallbackExtras.actions.filter(action => action !== 'insights')
+      }
       answer = {
-        text: getAssistantReply(question),
-        suggestions: fallbackSuggestions,
-        ...getFallbackExtras(question),
+        text: getAssistantReply(question, effectiveDataPermissions),
+        suggestions: fallbackSuggestions.filter(suggestion => (
+          effectiveDataPermissions.spendingInsights
+          || !/budget|money|spend|subscription/i.test(suggestion)
+        )),
+        ...fallbackExtras,
         offline: true
       }
       setMode('Demo mode')
@@ -411,8 +472,10 @@ function AIAssistant({ onNavigate }) {
           <h1>Hi Olivia, let's make money simpler.</h1>
 
           <p className="ai-welcome-message">
-            You have <strong>$650 left in your November budget.</strong>
-            {' '}I can help with your money, explain our products and
+            {effectiveDataPermissions.spendingInsights
+              ? <>You have <strong>$650 left in your November budget.</strong>{' '}</>
+              : <>Spending insights are turned off.{' '}</>}
+            I can help with your money, explain our products and
             services, check a security concern or fix a problem with the
             app. Choose a topic below or ask me anything.
           </p>
@@ -420,7 +483,11 @@ function AIAssistant({ onNavigate }) {
           <div className="ai-question-section">
             <h2>Choose a topic</h2>
 
-            <CategoryTabs activeId={activeCategory} onSelect={setActiveCategory} />
+            <CategoryTabs
+              activeId={currentCategory.id}
+              onSelect={setActiveCategory}
+              categoriesToShow={visibleCategories}
+            />
 
             <div className="ai-topic-list">
               {currentCategory.questions.map(question => (
@@ -450,7 +517,7 @@ function AIAssistant({ onNavigate }) {
 
           <div className="ai-history-section">
             <div className="ai-history-header">
-              <h2>Previous conversations</h2>
+              <h2>{history.length > 0 ? 'Previous conversations' : 'Try an example conversation'}</h2>
               {history.length > 0 && (
                 <button className="ai-text-button" onClick={() => setHistory([])}>
                   Clear

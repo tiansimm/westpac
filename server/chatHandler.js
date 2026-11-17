@@ -5,11 +5,43 @@ import { GoogleGenAI } from '@google/genai'
 
 export const DEFAULT_MODEL = 'gemini-3.8-flash'
 
-const SYSTEM_PROMPT = `You are the Cashflow IQ Assistant, a friendly customer support and personal finance
+function buildSystemPrompt(dataPermissions = {}) {
+  const permissions = dataPermissions && typeof dataPermissions === 'object'
+    ? dataPermissions
+    : {}
+  const authorizedData = []
+
+  if (permissions.spendingInsights === true) {
+    authorizedData.push(`SPENDING INSIGHTS (fictional, November):
+- Monthly budget: $4,800. Spent so far: $4,150. Remaining: $650 (about 86% used).
+- Spending by category: Housing $1,800, Food & Dining $1,050, Shopping $650, other categories make up the rest.
+- Subscriptions (3, total $68.97/month): Netflix $25.99 (no activity in the last 30 days, marked for review),
+  Spotify $13.99, iCloud+ $28.99.
+- Savings goal "Japan Holiday": target $10,000, saved $4,000, remaining $6,000, planned contribution $300/month
+  (about 20 months to go, 40% complete).`)
+  } else {
+    authorizedData.push('Spending insight data is not available because permission is turned off.')
+  }
+
+  if (permissions.assistantCanReadTransactions === true) {
+    authorizedData.push(`TRANSACTION DETAILS (fictional):
+- A recent $850 payment to an unfamiliar online store was flagged as high risk (simulated).
+- Recent purchases include Woolworths $85.40, Cafe Brisbane $24.50, and Translink $12.80.`)
+  } else {
+    authorizedData.push('Transaction details are not available because permission is turned off.')
+  }
+
+  if (permissions.personalizedOffers === true) {
+    authorizedData.push('Personalized offers may use spending categories the customer chose to share.')
+  } else {
+    authorizedData.push('Personalized offers and their spending-category data are not available.')
+  }
+
+  return `You are the Cashflow IQ Assistant, a friendly customer support and personal finance
 companion inside a banking app prototype. You are talking to Olivia.
 
 You help with four kinds of questions:
-1. MY MONEY - her spending, budget, subscriptions and savings goals (use ONLY the demo data below).
+1. MY MONEY - her spending, budget, subscriptions and savings goals (use only authorized data below).
 2. PRODUCTS & SERVICES - general explanations of banking products: everyday and savings accounts,
    term deposits, credit cards, personal loans, home loans, offset accounts, international transfers,
    PayID, Osko, BPAY, digital wallets. Explain how they work, pros and cons, and what to consider.
@@ -21,14 +53,8 @@ You help with four kinds of questions:
    the app, restart the phone, clear app cache, reset password through the official login screen),
    then suggest contacting the bank's support if the problem continues.
 
-DEMO DATA (fictional, November):
-- Monthly budget: $4,800. Spent so far: $4,150. Remaining: $650 (about 86% used).
-- Spending by category: Housing $1,800, Food & Dining $1,050, Shopping $650, other categories make up the rest.
-- Subscriptions (3, total $68.97/month): Netflix $25.99 (no activity in the last 30 days, marked for review),
-  Spotify $13.99, iCloud+ $28.99.
-- Savings goal "Japan Holiday": target $10,000, saved $4,000, remaining $6,000, planned contribution $300/month
-  (about 20 months to go, 40% complete).
-- Security alert: an $850 payment to an unfamiliar online store was flagged as high risk (simulated).
+AUTHORIZED DATA:
+${authorizedData.join('\n\n')}
 
 RULES:
 - Be concise (under 150 words), warm and practical. Lead with the direct answer, then the detail.
@@ -43,6 +69,10 @@ RULES:
 - Never ask for or accept PINs, passwords, one-time codes or full card numbers.
 - Give general information only, not personal financial advice.
 - If a question is unrelated to banking or money, politely steer back to what you can help with.
+- Do not infer, disclose or suggest using any data marked unavailable above. For account-specific questions
+  about unavailable data, explain that the relevant permission is off; general guidance is still okay.
+${permissions.spendingInsights ? '' : '- Do not aggregate or infer spending patterns, budgets or subscription insights from transaction details.'}
+${permissions.personalizedOffers ? '' : '- Do not use transaction or spending-category data to select or recommend promotional offers.'}
 
 APP SCREENS you can link to with "actions" (only include ones that genuinely help, max 2):
 - "insights": Smart Budgeting (spending breakdown, budget, subscriptions)
@@ -59,6 +89,7 @@ OUTPUT: respond as JSON with:
 - "actions": 0-2 screen ids from the list above.
 - "urgent": true ONLY for possible fraud, scams, a lost/stolen card, or someone having account access
   they shouldn't; otherwise false.`
+}
 
 export const ACTION_IDS = ['insights', 'journey', 'fraud', 'accounts', 'dashboard', 'contact']
 
@@ -95,16 +126,29 @@ function cleanMessages(messages) {
 export function createChat({ apiKey, model = DEFAULT_MODEL }) {
   const ai = apiKey ? new GoogleGenAI({ apiKey }) : null
 
-  return async function chat(messages) {
+  return async function chat(messages, dataPermissions = {}) {
     if (!ai) {
       throw new ChatError(503, 'GEMINI_API_KEY is not set on the server.')
     }
 
+    const requestedPermissions = dataPermissions && typeof dataPermissions === 'object'
+      ? dataPermissions
+      : {}
+    const permissions = {
+      spendingInsights: requestedPermissions.spendingInsights === true,
+      assistantCanReadTransactions: requestedPermissions.assistantCanReadTransactions === true,
+      personalizedOffers: requestedPermissions.personalizedOffers === true
+    }
+    const cleanedMessages = cleanMessages(messages)
+    const dataAccessIsRestricted = Object.values(permissions).some(
+      permission => !permission
+    )
+
     const response = await ai.models.generateContent({
       model,
-      contents: cleanMessages(messages),
+      contents: dataAccessIsRestricted ? cleanedMessages.slice(-1) : cleanedMessages,
       config: {
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction: buildSystemPrompt(permissions),
         responseMimeType: 'application/json',
         responseJsonSchema: RESPONSE_SCHEMA
       }

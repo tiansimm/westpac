@@ -1,0 +1,42 @@
+.settings-section-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 14px 20px 0;
+  background: #f5f4f6;
+}
+
+.settings-section-tabs button {
+  min-height: 38px;
+  padding: 8px 14px;
+  color: #555a61;
+  background: white;
+  border: 1px solid #e1dee3;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-section-tabs button.active {
+  color: white;
+  background: #681950;
+  border-color: #681950;
+}
+
+.settings-section-tabs button:focus-visible {
+  outline: 2px solid #D5002B;
+  outline-offset: 3px;
+}
+
+@media (max-width: 420px) {
+  .settings-section-tabs {
+    gap: 6px;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .settings-section-tabs button {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}

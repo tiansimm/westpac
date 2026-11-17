@@ -11,6 +11,8 @@ import FraudProtection from './pages/fraudProtection.jsx'
 import AIAssistant from './pages/aiAssistant.jsx'
 import Accounts from './pages/accounts.jsx'
 import NotificationSettings from './pages/notificationSettings.jsx'
+import AIDataSettings from './pages/aiDataSettings.jsx'
+import { deleteAssistantChatHistory } from './utils/assistantChatStorage.js'
 
 const navItems = [
   { id: 'dashboard', label: 'Home', icon: '⌂' },
@@ -27,6 +29,12 @@ const initialNotificationPreferences = {
   personalizedOffers: true,
   savingsTips: false,
   frequency: 'twiceAWeek'
+}
+
+const initialAIDataPreferences = {
+  spendingInsights: true,
+  homeSuggestions: true,
+  assistantCanReadTransactions: true
 }
 
 const initialNotifications = [
@@ -72,6 +80,8 @@ function App() {
   const [notificationPreferences, setNotificationPreferences] = useState(
     initialNotificationPreferences
   )
+  const [settingsSection, setSettingsSection] = useState('notifications')
+  const [aiDataPreferences, setAIDataPreferences] = useState(initialAIDataPreferences)
 
   const visibleNotifications = notifications.filter(notification =>
     notificationPreferences.promotionalNotifications
@@ -99,8 +109,21 @@ function App() {
     }))
   }
 
+  const updateAIDataPreference = (key, value) => {
+    if (key === 'personalizedOffers') {
+      updateNotificationPreference(key, value)
+      return
+    }
+
+    setAIDataPreferences(previous => ({
+      ...previous,
+      [key]: value
+    }))
+  }
+
   const openNotificationSettings = () => {
     setShowNotifications(false)
+    setSettingsSection('notifications')
     setCurrentPage('settings')
   }
 
@@ -128,6 +151,8 @@ function App() {
           onAssistant={() => setCurrentPage('assistant')}
           promotionalNotificationsEnabled={notificationPreferences.promotionalNotifications}
           personalizedOffersEnabled={notificationPreferences.personalizedOffers}
+          spendingInsightsEnabled={aiDataPreferences.spendingInsights}
+          homeSuggestionsEnabled={aiDataPreferences.homeSuggestions}
         />
       )
     }
@@ -166,11 +191,31 @@ function App() {
     }
 
     if (currentPage === 'settings') {
+      const settingsProps = {
+        onBack: () => setCurrentPage('dashboard'),
+        onSectionChange: setSettingsSection
+      }
+
+      if (settingsSection === 'aiData') {
+        return (
+          <AIDataSettings
+            {...settingsProps}
+            preferences={{
+              ...aiDataPreferences,
+              personalizedOffers: notificationPreferences.personalizedOffers
+            }}
+            onPreferenceChange={updateAIDataPreference}
+            onDeleteChatHistory={deleteAssistantChatHistory}
+          />
+        )
+      }
+
       return (
         <NotificationSettings
+          {...settingsProps}
+          activeSection={settingsSection}
           preferences={notificationPreferences}
           onPreferenceChange={updateNotificationPreference}
-          onBack={() => setCurrentPage('dashboard')}
         />
       )
     }
@@ -180,6 +225,12 @@ function App() {
         <AIAssistant
           onBack={() => setCurrentPage('dashboard')}
           onNavigate={setCurrentPage}
+          dataPermissions={{
+            spendingInsights: aiDataPreferences.spendingInsights,
+            homeSuggestions: aiDataPreferences.homeSuggestions,
+            assistantCanReadTransactions: aiDataPreferences.assistantCanReadTransactions,
+            personalizedOffers: notificationPreferences.personalizedOffers
+          }}
         />
       )
     }
@@ -216,6 +267,7 @@ function App() {
                 }`}
                 onClick={() => {
                   setShowNotifications(false)
+                  if (item.id === 'settings') setSettingsSection('notifications')
                   setCurrentPage(item.id)
                 }}
                 aria-label={item.label}

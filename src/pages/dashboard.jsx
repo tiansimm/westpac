@@ -17,7 +17,9 @@ function Dashboard({
   onFraud,
   onAssistant,
   promotionalNotificationsEnabled,
-  personalizedOffersEnabled
+  personalizedOffersEnabled,
+  spendingInsightsEnabled,
+  homeSuggestionsEnabled
 }) {
   const [showOverlapReminder, setShowOverlapReminder] = useState(true)
   const [highlightOverlappingExpenses, setHighlightOverlappingExpenses] = useState(false)
@@ -197,7 +199,7 @@ function Dashboard({
           <span className="demo-label">DEMO DATA</span>
         </div>
 
-        {showOverlapReminder && duplicateExpenseGroups.map(([category, expenses]) => (
+        {spendingInsightsEnabled && showOverlapReminder && duplicateExpenseGroups.map(([category, expenses]) => (
           <aside className="overlap-reminder" key={category} aria-label={`Possible overlap in ${category}`}>
             <div className="overlap-reminder-icon" aria-hidden="true">↻</div>
             <div className="overlap-reminder-content">
@@ -258,40 +260,42 @@ function Dashboard({
       </section>
 
       {/* Savings goal */}
-      <section className="home-getaway-card">
-        <div className="getaway-content">
-          <p className="eyebrow">YOUR NEXT GETAWAY</p>
-          <h2>Japan is getting closer! ✈️</h2>
-          <p>
-            Keep building your savings and take one step closer
-            to your next adventure.
-          </p>
+      {homeSuggestionsEnabled && (
+        <section className="home-getaway-card">
+          <div className="getaway-content">
+            <p className="eyebrow">YOUR NEXT GETAWAY</p>
+            <h2>Japan is getting closer! ✈️</h2>
+            <p>
+              Keep building your savings and take one step closer
+              to your next adventure.
+            </p>
 
-          <div className="getaway-progress-label">
-            <span>Progress towards your goal</span>
-            <strong>40%</strong>
+            <div className="getaway-progress-label">
+              <span>Progress towards your goal</span>
+              <strong>40%</strong>
+            </div>
+
+            <div className="getaway-progress-track">
+              <div className="getaway-progress-fill"></div>
+            </div>
+
+            <div className="getaway-amounts">
+              <strong>$4,000 saved</strong>
+              <span>$10,000 goal</span>
+            </div>
+
+            <button className="home-primary-button" onClick={onJourney}>
+              View my savings goal →
+            </button>
           </div>
 
-          <div className="getaway-progress-track">
-            <div className="getaway-progress-fill"></div>
+          <div className="getaway-illustration" aria-hidden="true">
+            <span>🗻</span>
+            <span>🌸</span>
+            <span>⛩️</span>
           </div>
-
-          <div className="getaway-amounts">
-            <strong>$4,000 saved</strong>
-            <span>$10,000 goal</span>
-          </div>
-
-          <button className="home-primary-button" onClick={onJourney}>
-            View my savings goal →
-          </button>
-        </div>
-
-        <div className="getaway-illustration" aria-hidden="true">
-          <span>🗻</span>
-          <span>🌸</span>
-          <span>⛩️</span>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Quick navigation */}
       <section className="home-section">

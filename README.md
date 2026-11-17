@@ -14,7 +14,7 @@ A personal finance companion prototype built for the Westpac Project Future comp
 | Fraud Protection | Simulated security alerts for suspicious transactions |
 | Accounts | Demo account summaries |
 | AI Assistant | A chat assistant (Google Gemini) that answers questions using the demo data |
-| Settings | Notification preferences for promotions, personalised offers and savings tips |
+| Settings | Notification preferences and controls for AI use of demo data |
 
 ## Getting started
 
@@ -99,7 +99,7 @@ Deployed site:  Browser ──POST /api/chat──▶ Vercel function (api/chat.
 
 | File | Purpose |
 | --- | --- |
-| [`server/chatHandler.js`](server/chatHandler.js) | Shared logic: the system prompt (Olivia's demo data, topics, safety rules) and the Gemini call. Gemini returns a reply **plus 3 follow-up suggestions**. Edit `SYSTEM_PROMPT` here to change the assistant. |
+| [`server/chatHandler.js`](server/chatHandler.js) | Shared logic: builds the system prompt from the current AI-data permissions, Olivia's demo data and safety rules. Disabled data categories and prior chat turns are withheld from Gemini. |
 | [`server/geminiPlugin.js`](server/geminiPlugin.js) | Adds `/api/chat` to the local Vite server. Uses your key if you have one, otherwise forwards to the shared URL. |
 | [`api/chat.js`](api/chat.js) | Vercel serverless function for the deployed site. |
 | [`src/pages/aiAssistant.jsx`](src/pages/aiAssistant.jsx) | Chat UI. Edit the `categories` list at the top to add topics or suggested questions. If the AI is unreachable, it falls back to scripted replies. |
@@ -164,7 +164,9 @@ If you change `GEMINI_API_KEY` in Vercel later, redeploy for it to take effect.
 │   └── geminiPlugin.js     # Local /api/chat (dev server)
 ├── src/
 │   ├── App.jsx             # Navigation and page switching
-│   ├── pages/              # One component per page
+│   ├── components/         # Shared interface components
+│   ├── pages/              # One component per page, including settings
+│   ├── utils/              # Assistant chat storage helpers
 │   └── styles/             # Per-page CSS
 ├── .env.example            # Template for your .env.local
 └── vite.config.js

@@ -1,4 +1,5 @@
 import '../styles/notificationSettings.css'
+import SettingsSectionTabs from '../components/SettingsSectionTabs.jsx'
 
 const promotionPreferences = [
   {
@@ -24,7 +25,13 @@ const notificationFrequencies = [
   { value: 'asTheyHappen', label: 'As they happen' }
 ]
 
-function NotificationSettings({ preferences, onPreferenceChange, onBack }) {
+function NotificationSettings({
+  preferences,
+  onPreferenceChange,
+  onBack,
+  activeSection,
+  onSectionChange
+}) {
   return (
     <section className="notification-settings-page">
       <header className="notification-settings-header">
@@ -37,6 +44,11 @@ function NotificationSettings({ preferences, onPreferenceChange, onBack }) {
         </button>
         <h1>Notifications</h1>
       </header>
+
+      <SettingsSectionTabs
+        activeSection={activeSection}
+        onSelect={onSectionChange}
+      />
 
       <div className="notification-settings-content">
         <fieldset className="notification-settings-section">

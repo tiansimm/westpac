@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-    res.status(200).json(await chat(body?.messages))
+    res.status(200).json(await chat(body?.messages, body?.dataPermissions))
   } catch (err) {
     console.error('[ai]', err)
     res.status(err.status || 500).json({ error: err.message || 'AI request failed' })

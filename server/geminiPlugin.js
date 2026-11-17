@@ -45,18 +45,18 @@ export default function geminiPlugin({ apiKey, model, sharedApiUrl }) {
     if (req.method !== 'POST') return sendJson(res, 405, { error: 'Use POST' })
 
     try {
-      const { messages } = await readJsonBody(req)
+      const { messages, dataPermissions } = await readJsonBody(req)
 
       if (!apiKey && sharedApiUrl) {
         const upstream = await fetch(sharedApiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages })
+          body: JSON.stringify({ messages, dataPermissions })
         })
         return sendJson(res, upstream.status, await upstream.json())
       }
 
-      sendJson(res, 200, await chat(messages))
+      sendJson(res, 200, await chat(messages, dataPermissions))
     } catch (err) {
       console.error('[ai]', err.message)
       sendJson(res, err.status || 500, { error: err.message || 'AI request failed' })
