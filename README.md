@@ -14,6 +14,7 @@ A personal finance companion prototype built for the Westpac Project Future comp
 | Fraud Protection | Simulated security alerts for suspicious transactions |
 | Accounts | Demo account summaries |
 | AI Assistant | A chat assistant (Google Gemini) that answers questions using the demo data |
+| Settings | Notification preferences for promotions, personalised offers and savings tips |
 
 ## Getting started
 

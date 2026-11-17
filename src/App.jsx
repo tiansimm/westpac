@@ -10,6 +10,7 @@ import FinancialJourney from './pages/financialJourney.jsx'
 import FraudProtection from './pages/fraudProtection.jsx'
 import AIAssistant from './pages/aiAssistant.jsx'
 import Accounts from './pages/accounts.jsx'
+import NotificationSettings from './pages/notificationSettings.jsx'
 
 const navItems = [
   { id: 'dashboard', label: 'Home', icon: '⌂' },
@@ -17,8 +18,16 @@ const navItems = [
   { id: 'journey', label: 'Savings Goals', icon: '◎' },
   { id: 'fraud', label: 'Fraud Protection', icon: '▣' },
   { id: 'accounts', label: 'Accounts', icon: '▤' },
-  { id: 'assistant', label: 'AI Assistant', icon: '✦' }
+  { id: 'assistant', label: 'AI Assistant', icon: '✦' },
+  { id: 'settings', label: 'Settings', icon: '⚙' }
 ]
+
+const initialNotificationPreferences = {
+  promotionalNotifications: true,
+  personalizedOffers: true,
+  savingsTips: false,
+  frequency: 'twiceAWeek'
+}
 
 const initialNotifications = [
   {
@@ -29,6 +38,7 @@ const initialNotifications = [
     saving: '$15.00',
     category: 'Groceries',
     icon: '🛒',
+    personalized: true,
     read: false
   },
   {
@@ -39,6 +49,7 @@ const initialNotifications = [
     saving: '20% off',
     category: 'Dining',
     icon: '🍽️',
+    personalized: true,
     read: false
   },
   {
@@ -49,6 +60,7 @@ const initialNotifications = [
     saving: '10% off',
     category: 'Transport',
     icon: '🚗',
+    personalized: true,
     read: false
   }
 ]
@@ -57,18 +69,39 @@ function App() {
   const [currentPage, setCurrentPage] = useState('welcome')
   const [notifications, setNotifications] = useState(initialNotifications)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [notificationPreferences, setNotificationPreferences] = useState(
+    initialNotificationPreferences
+  )
 
-  const unreadCount = notifications.filter(
+  const visibleNotifications = notifications.filter(notification =>
+    notificationPreferences.promotionalNotifications
+      && (!notification.personalized || notificationPreferences.personalizedOffers)
+  )
+  const unreadCount = visibleNotifications.filter(
     notification => !notification.read
   ).length
 
   const markAllAsRead = () => {
+    const visibleIds = new Set(visibleNotifications.map(notification => notification.id))
+
     setNotifications(previous =>
       previous.map(notification => ({
         ...notification,
-        read: true
+        read: notification.read || visibleIds.has(notification.id)
       }))
     )
+  }
+
+  const updateNotificationPreference = (key, value) => {
+    setNotificationPreferences(previous => ({
+      ...previous,
+      [key]: value
+    }))
+  }
+
+  const openNotificationSettings = () => {
+    setShowNotifications(false)
+    setCurrentPage('settings')
   }
 
   const openPromotion = (id) => {
@@ -93,6 +126,8 @@ function App() {
           onJourney={() => setCurrentPage('journey')}
           onFraud={() => setCurrentPage('fraud')}
           onAssistant={() => setCurrentPage('assistant')}
+          promotionalNotificationsEnabled={notificationPreferences.promotionalNotifications}
+          personalizedOffersEnabled={notificationPreferences.personalizedOffers}
         />
       )
     }
@@ -126,6 +161,16 @@ function App() {
       return (
         <Accounts
           onAssistant={() => setCurrentPage('assistant')}
+        />
+      )
+    }
+
+    if (currentPage === 'settings') {
+      return (
+        <NotificationSettings
+          preferences={notificationPreferences}
+          onPreferenceChange={updateNotificationPreference}
+          onBack={() => setCurrentPage('dashboard')}
         />
       )
     }
@@ -169,7 +214,10 @@ function App() {
                 className={`nav-link ${
                   currentPage === item.id ? 'active' : ''
                 }`}
-                onClick={() => setCurrentPage(item.id)}
+                onClick={() => {
+                  setShowNotifications(false)
+                  setCurrentPage(item.id)
+                }}
                 aria-label={item.label}
                 aria-current={
                   currentPage === item.id ? 'page' : undefined
@@ -215,17 +263,29 @@ function App() {
                       <p>
                         {unreadCount > 0
                           ? `${unreadCount} unread promotional updates`
-                          : 'You are all caught up!'}
+                          : visibleNotifications.length > 0
+                            ? 'You are all caught up!'
+                            : 'No promotional notifications to show'}
                       </p>
                     </div>
 
-                    <button
-                      className="notification-close"
-                      onClick={() => setShowNotifications(false)}
-                      aria-label="Close notifications"
-                    >
-                      ×
-                    </button>
+                    <div className="notification-panel-actions">
+                      <button
+                        className="notification-close"
+                        onClick={openNotificationSettings}
+                        aria-label="Notification settings"
+                        title="Notification settings"
+                      >
+                        ⚙
+                      </button>
+                      <button
+                        className="notification-close"
+                        onClick={() => setShowNotifications(false)}
+                        aria-label="Close notifications"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
 
                   {unreadCount > 0 && (
@@ -238,7 +298,18 @@ function App() {
                   )}
 
                   <div className="notification-list">
-                    {notifications.map(notification => (
+                    {visibleNotifications.length === 0 ? (
+                      <div className="notification-empty-state">
+                        <p>
+                          {notificationPreferences.promotionalNotifications
+                            ? 'No offers match your current notification preferences.'
+                            : 'Promotional notifications are turned off.'}
+                        </p>
+                        <button onClick={openNotificationSettings}>
+                          Manage notification settings →
+                        </button>
+                      </div>
+                    ) : visibleNotifications.map(notification => (
                       <div
                         className={`notification-item ${
                           notification.read ? 'read' : 'unread'

@@ -283,12 +283,28 @@
   font-size: 12px;
 }
 
+.notification-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .notification-close {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
   border: none;
   background: transparent;
   font-size: 24px;
   color: #7b8490;
   cursor: pointer;
+  border-radius: 50%;
+}
+
+.notification-close:hover {
+  background: #f1f2f4;
+  color: #37424A;
 }
 
 .mark-read-button {
@@ -305,6 +321,28 @@
 .notification-list {
   max-height: 440px;
   overflow-y: auto;
+}
+
+.notification-empty-state {
+  padding: 24px 20px;
+  color: #69737d;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.notification-empty-state p {
+  margin: 0 0 12px;
+}
+
+.notification-empty-state button {
+  padding: 0;
+  color: #218653;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .notification-item {

@@ -11,7 +11,14 @@ const transactions = [
   { name: 'Salary payment', category: 'Income', date: '14 Nov 2026', amount: '+$3,000.00', icon: '💰' },
 ]
 
-function Dashboard({ onInsights, onJourney, onFraud, onAssistant }) {
+function Dashboard({
+  onInsights,
+  onJourney,
+  onFraud,
+  onAssistant,
+  promotionalNotificationsEnabled,
+  personalizedOffersEnabled
+}) {
   const [showOverlapReminder, setShowOverlapReminder] = useState(true)
   const [highlightOverlappingExpenses, setHighlightOverlappingExpenses] = useState(false)
   const [groceryOfferDismissed, setGroceryOfferDismissed] = useState(false)
@@ -21,7 +28,10 @@ function Dashboard({ onInsights, onJourney, onFraud, onAssistant }) {
     (transaction) => transaction.category.toLowerCase() === 'groceries'
       && transaction.amount.startsWith('-')
   )
-  const showGroceryOffer = hasGroceryPurchase && !groceryOfferDismissed
+  const showGroceryOffer = hasGroceryPurchase
+    && promotionalNotificationsEnabled
+    && personalizedOffersEnabled
+    && !groceryOfferDismissed
 
   useEffect(() => {
     const dialog = groceryOfferDialog.current
