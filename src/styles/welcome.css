@@ -44,14 +44,6 @@
   font-weight: bold;
 }
 
-.app .nav-button {
-  background: white;
-  border: 1px solid #D5002B;
-  color: #D5002B;
-  padding: 10px 25px;
-  border-radius: 6px;
-}
-
 /* Hero section */
 
 .app .hero {
@@ -118,8 +110,7 @@
 }
 
 .app .primary-button:hover,
-.app .secondary-button:hover,
-.app .nav-button:hover {
+.app .secondary-button:hover {
   opacity: 0.85;
 }
 

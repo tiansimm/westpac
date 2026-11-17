@@ -8,10 +8,6 @@ function Welcome({ onGetStarted }) {
           <span className="brand-icon">W</span>
           <span>Westpac <strong>Cashflow IQ</strong></span>
         </div>
-
-        <button className="nav-button">
-          Sign in
-        </button>
       </nav>
 
       <main className="hero">
