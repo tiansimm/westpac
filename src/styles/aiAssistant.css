@@ -346,6 +346,304 @@
   cursor: not-allowed;
 }
 
+/* ========================================
+   TOPIC CATEGORIES & SUGGESTIONS
+======================================== */
+
+.ai-category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.ai-category-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 9px 14px;
+  background: #ffffff;
+  border: 1px solid #dce3e8;
+  border-radius: 999px;
+  color: #52616b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-category-tab:hover {
+  border-color: #D5002B;
+  color: #D5002B;
+}
+
+.ai-category-tab.active {
+  background: #D5002B;
+  border-color: #D5002B;
+  color: #ffffff;
+}
+
+/* Westpac-style stacked option list */
+.ai-topic-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+  border: 1px solid #e3e6e8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ai-topic-option {
+  padding: 15px 18px;
+  background: #ffffff;
+  border: none;
+  border-bottom: 1px solid #e3e6e8;
+  color: #D5002B;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ai-topic-option:last-child {
+  border-bottom: none;
+}
+
+.ai-topic-option:hover {
+  background: #fff4f6;
+}
+
+.ai-welcome-input {
+  margin-top: 22px;
+  padding: 0;
+  border-top: none;
+}
+
+/* Follow-up suggestion chips */
+.ai-suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-left: 48px;
+}
+
+.ai-suggestion-chip {
+  padding: 8px 13px;
+  background: #ffffff;
+  border: 1px solid #f0b8c3;
+  border-radius: 999px;
+  color: #D5002B;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ai-suggestion-chip:hover {
+  background: #fff0f3;
+  border-color: #D5002B;
+}
+
+/* Topic panel in chat view */
+.ai-topic-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 25px;
+  border-top: 1px solid #eeeeee;
+  background: #fafbfb;
+}
+
+.ai-topic-panel .ai-suggestion-chips {
+  padding-left: 0;
+}
+
+.ai-input-area .ai-topics-toggle {
+  padding: 12px 14px;
+  background: #ffffff;
+  color: #52616b;
+  border: 1px solid #dce3e8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ai-input-area .ai-topics-toggle.active,
+.ai-input-area .ai-topics-toggle:hover {
+  border-color: #D5002B;
+  color: #D5002B;
+}
+
+/* Typing indicator */
+.ai-typing {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 17px;
+}
+
+.ai-typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #9aa3a9;
+  animation: ai-typing-bounce 1.2s infinite ease-in-out;
+}
+
+.ai-typing span:nth-child(2) { animation-delay: 0.15s; }
+.ai-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes ai-typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-typing span { animation: none; }
+}
+
+/* ========================================
+   RICH REPLIES: formatting, actions, tools
+======================================== */
+
+.ai-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 75%;
+  min-width: 0;
+}
+
+.ai-reply .message-bubble {
+  max-width: 100%;
+}
+
+.message-bubble.formatted {
+  white-space: normal;
+}
+
+.message-bubble.formatted p {
+  margin: 0 0 8px;
+}
+
+.message-bubble.formatted p:last-child,
+.message-bubble.formatted ol:last-child,
+.message-bubble.formatted ul:last-child {
+  margin-bottom: 0;
+}
+
+.message-bubble.formatted ol,
+.message-bubble.formatted ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+.message-bubble.formatted li {
+  margin-bottom: 4px;
+}
+
+.message-bubble.formatted strong {
+  color: #1f2a30;
+}
+
+.ai-urgent-banner {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: #fff0f3;
+  border-left: 4px solid #D5002B;
+  border-radius: 8px;
+  color: #6b1020;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ai-urgent-banner strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #D5002B;
+}
+
+.ai-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  background: #D5002B;
+  border: none;
+  border-radius: 9px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ai-action-button:hover {
+  background: #b00024;
+}
+
+.ai-message-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ai-message-tools button {
+  padding: 4px 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #7a858c;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ai-message-tools button:hover {
+  background: #f3f5f6;
+  border-color: #e3e6e8;
+}
+
+.ai-message-tools button.selected {
+  background: #fff0f3;
+  border-color: #f0b8c3;
+}
+
+.ai-feedback-note {
+  margin: 0;
+  color: #7a858c;
+  font-size: 12px;
+}
+
+.ai-text-button {
+  padding: 0;
+  background: none;
+  border: none;
+  color: #D5002B;
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ai-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.ai-history-header .ai-text-button {
+  font-size: 12px;
+}
+
 /* Disclaimer */
 
 .ai-disclaimer {
@@ -405,7 +703,8 @@
     padding: 18px;
   }
 
-  .message-bubble {
+  .message-bubble,
+  .ai-reply {
     max-width: 85%;
   }
 
@@ -425,6 +724,7 @@
 
   .ai-heading-actions {
     width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
     margin-left: 0;
   }
@@ -439,5 +739,17 @@
 
   .ai-input-area button {
     padding: 10px 14px;
+  }
+
+  .ai-input-area .ai-topics-toggle {
+    padding: 10px;
+  }
+
+  .ai-suggestion-chips {
+    padding-left: 0;
+  }
+
+  .ai-topic-panel {
+    padding: 14px 15px;
   }
 }
