@@ -59,6 +59,199 @@
   color: #37424A;
 }
 
+/* Money outlook */
+
+.money-outlook-section {
+  margin: 35px 0;
+}
+
+.money-outlook-section > .budget-section-heading {
+  margin-bottom: 14px;
+}
+
+.money-outlook-section .budget-section-heading h2,
+.upcoming-payments h3 {
+  color: #741B54;
+}
+
+.money-outlook-card,
+.upcoming-payments-card {
+  background: #fff;
+  border: 1px solid #e1e3e7;
+  border-radius: 20px;
+}
+
+.money-outlook-card {
+  padding: 26px;
+}
+
+.safe-to-spend {
+  max-width: 520px;
+}
+
+.safe-to-spend > span {
+  color: #555d68;
+  font-size: 15px;
+}
+
+.safe-to-spend > strong {
+  display: block;
+  color: #741B54;
+  font-size: 48px;
+  line-height: 1.15;
+  margin: 4px 0;
+}
+
+.safe-to-spend > p {
+  color: #555d68;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.outlook-chart {
+  margin: 28px 0 0;
+}
+
+.outlook-chart svg {
+  display: block;
+  width: 100%;
+  height: 190px;
+  overflow: visible;
+  font-family: inherit;
+}
+
+.outlook-grid-line {
+  stroke: #e6e7ea;
+  stroke-width: 1;
+}
+
+.outlook-forecast-area {
+  fill: #f5e8ef;
+}
+
+.outlook-actual-line,
+.outlook-forecast-line {
+  fill: none;
+  stroke: #741B54;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.outlook-forecast-line {
+  stroke-dasharray: 9 10;
+}
+
+.outlook-today-marker {
+  fill: #fff;
+  stroke: #741B54;
+  stroke-width: 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.outlook-bill-marker,
+.legend-bill-dot {
+  fill: #c91818;
+}
+
+.outlook-bill-label {
+  fill: #c91818;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.outlook-today-label {
+  fill: #555d68;
+  font-size: 16px;
+}
+
+.outlook-chart-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  color: #555d68;
+  font-size: 14px;
+}
+
+.outlook-chart-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-line {
+  width: 22px;
+  border-top: 3px solid #741B54;
+  border-radius: 5px;
+}
+
+.legend-line-forecast {
+  border-top-style: dashed;
+}
+
+.legend-bill-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.upcoming-payments {
+  margin-top: 22px;
+}
+
+.upcoming-payments h3 {
+  font-size: 23px;
+  margin: 0 0 10px;
+}
+
+.upcoming-payments-card {
+  padding: 0 20px;
+}
+
+.upcoming-payment {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e6e7ea;
+}
+
+.upcoming-payment:last-child {
+  border-bottom: 0;
+}
+
+.upcoming-payment > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upcoming-payment > div strong {
+  color: #252a31;
+  font-size: 15px;
+}
+
+.upcoming-payment > div span {
+  color: #68717b;
+  font-size: 14px;
+}
+
+.upcoming-payment-amount {
+  color: #252a31;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.outlook-disclaimer {
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
 /* General sections */
 
 .budget-section {
@@ -632,6 +825,31 @@
 @media (max-width: 600px) {
   .insights-page h1 {
     font-size: 30px;
+  }
+
+  .money-outlook-card {
+    padding: 20px 16px;
+  }
+
+  .safe-to-spend > strong {
+    font-size: 42px;
+  }
+
+  .outlook-chart {
+    margin-top: 24px;
+  }
+
+  .outlook-chart svg {
+    height: 160px;
+  }
+
+  .outlook-chart-legend {
+    gap: 14px;
+    font-size: 13px;
+  }
+
+  .upcoming-payments-card {
+    padding: 0 16px;
   }
 
   .monthly-budget-card,

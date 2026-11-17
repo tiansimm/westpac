@@ -18,6 +18,12 @@ const transactions = [
   { name: 'Shopping Centre', category: 'Shopping', date: '12 Nov 2026', amount: -96.00 }
 ]
 
+const upcomingPayments = [
+  { name: 'Spotify', timing: 'Monday · Subscription', amount: 11.99 },
+  { name: 'Rent', timing: 'Friday · Usual amount', amount: 380 },
+  { name: 'Electricity', timing: 'Next Tuesday · Estimated', amount: 22 }
+]
+
 const subscriptions = [
   {
     name: 'Netflix',
@@ -173,6 +179,87 @@ function FinancialInsights({ onBack, onAssistant }) {
         <span>ℹ</span>
         Demonstration account — all financial data shown is fictional.
       </div>
+
+      <section className="money-outlook-section" aria-labelledby="money-outlook-title">
+        <div className="budget-section-heading">
+          <div>
+            <p className="eyebrow">PLAN AHEAD</p>
+            <h2 id="money-outlook-title">Money outlook</h2>
+          </div>
+        </div>
+
+        <div className="money-outlook-card">
+          <div className="safe-to-spend">
+            <span>Safe to spend until your next pay</span>
+            <strong>$1,946</strong>
+            <p>
+              After upcoming bills and a small buffer. Your balance is
+              {' '}$12,840.50.
+            </p>
+          </div>
+
+          <figure className="outlook-chart">
+            <svg
+              viewBox="0 0 640 190"
+              preserveAspectRatio="none"
+              role="img"
+              aria-labelledby="outlook-chart-title outlook-chart-description"
+            >
+              <title id="outlook-chart-title">Illustrative balance forecast</title>
+              <desc id="outlook-chart-description">
+                The balance trends down after today, with expected bill payments
+                for rent and power before the next pay.
+              </desc>
+              <line className="outlook-grid-line" x1="0" y1="30" x2="640" y2="30" />
+              <line className="outlook-grid-line" x1="0" y1="95" x2="640" y2="95" />
+              <line className="outlook-grid-line" x1="0" y1="160" x2="640" y2="160" />
+              <path
+                className="outlook-forecast-area"
+                d="M270 65 L365 82 L380 119 L490 132 L530 149 L640 143 L640 174 L530 155 L490 148 L380 137 L365 105 Z"
+              />
+              <path
+                className="outlook-actual-line"
+                d="M0 54 L70 47 L132 67 L196 60 L270 70"
+              />
+              <path
+                className="outlook-forecast-line"
+                d="M270 70 L365 88 L380 123 L490 137 L530 151 L640 145"
+              />
+              <circle className="outlook-today-marker" cx="270" cy="70" r="11" />
+              <circle className="outlook-bill-marker" cx="380" cy="123" r="9" />
+              <circle className="outlook-bill-marker" cx="530" cy="151" r="9" />
+              <text className="outlook-bill-label" x="380" y="106" textAnchor="middle">Rent</text>
+              <text className="outlook-bill-label" x="530" y="134" textAnchor="middle">Power</text>
+              <text className="outlook-today-label" x="270" y="184" textAnchor="middle">Today</text>
+            </svg>
+            <figcaption className="outlook-chart-legend">
+              <span><i className="legend-line" />So far</span>
+              <span><i className="legend-line legend-line-forecast" />Forecast</span>
+              <span><i className="legend-bill-dot" />Bill</span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div className="upcoming-payments">
+          <h3>Coming up</h3>
+          <div className="upcoming-payments-card">
+            {upcomingPayments.map(payment => (
+              <div className="upcoming-payment" key={payment.name}>
+                <div>
+                  <strong>{payment.name}</strong>
+                  <span>{payment.timing}</span>
+                </div>
+                <strong className="upcoming-payment-amount">
+                  −${payment.amount.toFixed(2)}
+                </strong>
+              </div>
+            ))}
+          </div>
+          <p className="outlook-disclaimer">
+            Illustrative estimate only. Upcoming payments and forecasts use fictional sample data.
+          </p>
+        </div>
+      </section>
 
       {/* Monthly spending overview */}
       <section className="budget-section">

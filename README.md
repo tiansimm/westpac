@@ -9,7 +9,7 @@ A personal finance companion prototype built for the Westpac Project Future comp
 | Page | What it does |
 | --- | --- |
 | Home | Overview dashboard of balances, budget and alerts |
-| Smart Budgeting | Spending breakdown by category and budget progress |
+| Smart Budgeting | Money outlook forecast with upcoming payments, spending breakdown by category and budget progress |
 | Savings Goals | Tracks goals such as the Japan Holiday fund |
 | Fraud Protection | Simulated security alerts for suspicious transactions |
 | Accounts | Demo account summaries |
