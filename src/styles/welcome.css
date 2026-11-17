@@ -1,6 +1,5 @@
-
 /* =================================
-   WELCOME PAGE
+   SHARED (also used by Savings Goals page)
 ================================= */
 
 .app {
@@ -10,295 +9,603 @@
   color: #37424A;
 }
 
-/* Navigation */
+/* =================================
+   WELCOME PAGE: design tokens
+================================= */
 
-.app .navbar {
-  height: 76px;
-  padding: 0 8%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #eeeeee;
-}
+.welcome-page {
+  --wp-red: #DA1710;
+  --wp-red-deep: #B8100B;
+  --wp-pink: #F9C8E8;
+  --wp-lilac: #C9A7F0;
+  --wp-ink: #1F1C4F;
+  --wp-white: #ffffff;
+  --wp-glass: rgba(255, 255, 255, 0.12);
+  --wp-glass-border: rgba(255, 255, 255, 0.38);
+  --wp-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+  --wp-body: 'Inter', Arial, Helvetica, sans-serif;
 
-.app .brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 19px;
-  font-weight: 600;
-}
-
-.app .brand strong {
-  color: #D5002B;
-}
-
-.app .brand-icon {
-  background: #D5002B;
-  color: white;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-weight: bold;
-}
-
-/* Hero section */
-
-.app .hero {
-  padding: 85px 10%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: 60px;
-  background: #fafafa;
-}
-
-.app .eyebrow {
-  color: #D5002B;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2px;
-}
-
-.app .hero h1 {
-  font-size: clamp(42px, 5vw, 66px);
-  line-height: 1.12;
-  margin: 25px 0;
-  color: #37424A;
-}
-
-.app .hero h1 span {
-  color: #D5002B;
-}
-
-.app .description {
-  color: #4D4F53;
-  line-height: 1.8;
-  max-width: 480px;
-  font-size: 16px;
-}
-
-/* Hero buttons */
-
-.app .hero-buttons {
-  display: flex;
-  gap: 15px;
-  margin-top: 32px;
-  flex-wrap: wrap;
-}
-
-.app .primary-button,
-.app .secondary-button {
-  padding: 15px 25px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.app .primary-button {
-  background: #D5002B;
-  color: white;
-  border: 1px solid #D5002B;
-}
-
-.app .secondary-button {
-  background: white;
-  color: #37424A;
-  border: 1px solid #D5D6D2;
-}
-
-.app .primary-button:hover,
-.app .secondary-button:hover {
-  opacity: 0.85;
-}
-
-.app .trust-message {
-  margin-top: 35px;
-  font-size: 13px;
-  color: #4D4F53;
-}
-
-.app .trust-message span {
-  color: #D5002B;
-  margin-right: 8px;
-}
-
-/* Financial preview card */
-
-.app .hero-visual {
-  position: relative;
-  padding: 20px;
-}
-
-.app .dashboard-card {
-  background: white;
-  padding: 35px;
-  border-radius: 16px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08);
-}
-
-.app .card-header,
-.app .progress-info {
-  display: flex;
-  justify-content: space-between;
-}
-
-.app .card-header {
-  font-size: 11px;
-  font-weight: bold;
-  color: #777;
-}
-
-.app .status-dot {
-  color: #279B65;
-}
-
-.app .balance-label {
-  margin-top: 35px;
-  color: #777;
-  font-size: 14px;
-}
-
-.app .dashboard-card h2 {
-  font-size: 36px;
-  margin: 8px 0 30px;
-  color: #37424A;
-}
-
-/* Savings progress */
-
-.app .savings-progress {
-  background: #f8f8f8;
-  padding: 20px;
-  border-radius: 10px;
-}
-
-.app .progress-info {
-  font-size: 13px;
-}
-
-.app .progress-bar {
-  height: 9px;
-  background: #e5e5e5;
-  border-radius: 20px;
-  margin: 15px 0;
-  overflow: hidden;
-}
-
-.app .progress-fill {
-  height: 100%;
-  width: 40%;
-  background: #D5002B;
-  border-radius: 20px;
-}
-
-.app .savings-progress p {
-  font-size: 12px;
-  color: #777;
-}
-
-/* AI insight */
-
-.app .insight-card {
-  display: flex;
-  gap: 15px;
-  margin-top: 22px;
-  padding: 18px;
-  background: #fff3f5;
-  border-radius: 10px;
-}
-
-.app .insight-icon {
-  color: #D5002B;
-  font-size: 23px;
-}
-
-.app .insight-card strong {
-  font-size: 14px;
-}
-
-.app .insight-card p {
-  font-size: 12px;
-  color: #666;
-  line-height: 1.6;
-}
-
-/* Floating label */
-
-.app .floating-tag {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  padding: 14px 20px;
-  border-radius: 8px;
-  background: #37424A;
-  color: white;
-  font-size: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-}
-
-/* Features section */
-
-.app .features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 35px;
-  padding: 65px 10%;
-}
-
-.app .feature span {
-  color: #D5002B;
-  font-size: 28px;
-}
-
-.app .feature h3 {
-  font-size: 17px;
-  color: #37424A;
-}
-
-.app .feature p {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #777;
+  font-family: var(--wp-body);
+  background: var(--wp-red);
+  overflow-x: hidden;
 }
 
 /* =================================
-   RESPONSIVE WELCOME PAGE
+   HERO
 ================================= */
 
-@media (max-width: 768px) {
-  .app .navbar {
-    padding: 0 5%;
-  }
+.welcome-hero {
+  position: relative;
+  min-height: 100vh;
+  padding: 24px 24px 64px;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.12), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(120, 0, 30, 0.35), transparent 45%),
+    var(--wp-red);
+  color: var(--wp-white);
+  overflow: hidden;
+}
 
-  .app .hero {
+.welcome-topbar,
+.welcome-hero-grid {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.welcome-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 17px;
+}
+
+.welcome-brand strong {
+  font-weight: 700;
+}
+
+.welcome-logo {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--wp-white);
+  color: var(--wp-red);
+  border-radius: 10px;
+  font-family: var(--wp-display);
+  font-size: 26px;
+}
+
+.welcome-badge {
+  padding: 8px 14px;
+  background: var(--wp-glass);
+  border: 1px solid var(--wp-glass-border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.welcome-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 48px;
+  align-items: center;
+  padding-top: 48px;
+}
+
+/* Headline */
+
+.welcome-title {
+  margin: 0;
+  font-family: var(--wp-display);
+  font-weight: 400;
+  font-size: clamp(60px, 8.5vw, 124px);
+  line-height: 0.92;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.title-pink {
+  display: block;
+  color: var(--wp-pink);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.18em;
+  margin-top: 0.08em;
+}
+
+.title-outline {
+  color: transparent;
+  -webkit-text-stroke: 3px var(--wp-white);
+  font-size: 0.95em;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.title-white {
+  color: var(--wp-white);
+}
+
+.welcome-lead {
+  max-width: 520px;
+  margin: 28px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.welcome-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding: 15px 26px;
+  background: var(--wp-white);
+  color: var(--wp-red);
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(80, 0, 10, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.welcome-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(80, 0, 10, 0.3);
+}
+
+.welcome-section-title {
+  margin: 44px 0 16px;
+  font-family: var(--wp-display);
+  font-weight: 400;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Shortcut pills */
+
+.welcome-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 620px;
+}
+
+.welcome-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  background: var(--wp-glass);
+  border: 1px solid var(--wp-glass-border);
+  border-radius: 999px;
+  color: var(--wp-white);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.welcome-pill:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.welcome-pill.active {
+  background: var(--wp-white);
+  border-color: var(--wp-white);
+  color: var(--wp-ink);
+}
+
+.welcome-pill:focus-visible,
+.welcome-cta:focus-visible {
+  outline: 3px solid var(--wp-pink);
+  outline-offset: 3px;
+}
+
+.welcome-note {
+  max-width: 480px;
+  margin: 28px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* =================================
+   DECORATIVE NETWORK
+================================= */
+
+.welcome-network {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.welcome-network svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.welcome-network line {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.network-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  background: var(--wp-white);
+  border-radius: 50%;
+}
+
+.network-dot.small {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--wp-lilac);
+}
+
+.network-node {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--wp-ink);
+  box-shadow: 0 8px 24px rgba(60, 0, 20, 0.25);
+  animation: node-float 6s ease-in-out infinite;
+}
+
+.network-node.pink {
+  background: var(--wp-pink);
+}
+
+.network-node.lilac {
+  background: var(--wp-lilac);
+  animation-delay: -2s;
+}
+
+@keyframes node-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* =================================
+   PHONE MOCK-UP
+================================= */
+
+.welcome-phone-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.welcome-phone {
+  position: relative;
+  width: min(100%, 330px);
+  padding: 12px;
+  background: #16161c;
+  border-radius: 48px;
+  box-shadow:
+    0 0 0 2px #3a3a44,
+    0 30px 60px rgba(60, 0, 15, 0.45);
+}
+
+.phone-notch {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  z-index: 2;
+  width: 96px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: #16161c;
+  border-radius: 20px;
+}
+
+.phone-screen {
+  overflow: hidden;
+  background: #f5f6f8;
+  border-radius: 38px;
+  color: #26303a;
+}
+
+.phone-header {
+  padding: 18px 20px 26px;
+  background:
+    repeating-linear-gradient(
+      -55deg,
+      #7B2CBF 0 34px,
+      #C2187A 34px 62px,
+      #E0115F 62px 84px,
+      #8E24AA 84px 120px
+    );
+  color: var(--wp-white);
+}
+
+.phone-status {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.phone-signal {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.phone-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.phone-chip,
+.phone-avatar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.phone-chip {
+  padding: 6px 11px;
+}
+
+.phone-avatar {
+  width: 30px;
+  height: 30px;
+  justify-content: center;
+}
+
+.phone-greeting {
+  margin: 20px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.phone-balance-label {
+  margin: 14px 0 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+.phone-balance {
+  margin: 0;
+  font-family: var(--wp-display);
+  font-size: 38px;
+  letter-spacing: 0.5px;
+}
+
+.phone-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 14px 22px;
+}
+
+.phone-card {
+  padding: 13px 14px;
+  background: var(--wp-white);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(20, 20, 40, 0.06);
+}
+
+.phone-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.phone-card-row strong {
+  color: var(--wp-red);
+}
+
+.phone-card small {
+  display: block;
+  margin-top: 6px;
+  color: #7a858c;
+  font-size: 11px;
+}
+
+.phone-bar {
+  height: 7px;
+  margin-top: 9px;
+  background: #eceef1;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.phone-bar span {
+  display: block;
+  height: 100%;
+  background: var(--wp-red);
+  border-radius: 999px;
+}
+
+.phone-bar.lilac span {
+  background: #8E24AA;
+}
+
+.phone-insight {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fde9f4;
+  border-radius: 16px;
+}
+
+.phone-insight-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: var(--wp-red);
+  color: var(--wp-white);
+  border-radius: 50%;
+}
+
+.phone-insight p {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.phone-insight strong {
+  display: block;
+  color: var(--wp-ink);
+}
+
+/* =================================
+   FEATURES STRIP
+================================= */
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 24px 72px;
+  background: var(--wp-white);
+}
+
+.welcome-page .welcome-features {
+  box-shadow: 0 0 0 100vmax var(--wp-white);
+  clip-path: inset(0 -100vmax);
+}
+
+.welcome-feature {
+  padding: 26px;
+  border: 1px solid #f0e3ea;
+  border-radius: 20px;
+}
+
+.welcome-feature-icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  background: #fde9f4;
+  color: var(--wp-red);
+  border-radius: 14px;
+}
+
+.welcome-feature h3 {
+  margin: 18px 0 8px;
+  color: var(--wp-ink);
+  font-size: 18px;
+}
+
+.welcome-feature p {
+  margin: 0;
+  color: #5d6870;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 900px) {
+  .welcome-hero-grid {
     grid-template-columns: 1fr;
-    padding: 55px 7%;
-    gap: 35px;
+    gap: 56px;
+    padding-top: 36px;
   }
 
-  .app .hero h1 {
-    font-size: 46px;
-  }
-
-  .app .hero-visual {
-    padding: 5px 0 25px;
-  }
-
-  .app .dashboard-card {
-    padding: 25px;
-  }
-
-  .app .floating-tag {
-    right: 0;
-    bottom: 0;
-  }
-
-  .app .features {
+  .welcome-features {
     grid-template-columns: 1fr;
-    padding: 45px 7%;
-    gap: 25px;
+  }
+
+  /* Keep the network in the top-right like the mobile reference */
+  .welcome-network {
+    height: 70vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .welcome-hero {
+    padding: 18px 16px 48px;
+  }
+
+  .welcome-brand {
+    font-size: 15px;
+  }
+
+  .welcome-brand span:last-child strong {
+    display: none;
+  }
+
+  .welcome-badge {
+    font-size: 11px;
+    padding: 7px 11px;
+  }
+
+  .welcome-title {
+    font-size: clamp(48px, 14vw, 80px);
+  }
+
+  .title-outline {
+    -webkit-text-stroke-width: 2px;
+  }
+
+  .welcome-lead {
+    font-size: 16px;
+  }
+
+  .welcome-pill {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .network-node {
+    width: 42px;
+    height: 42px;
+    margin: -21px 0 0 -21px;
+  }
+
+  .welcome-features {
+    padding: 40px 16px 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .network-node {
+    animation: none;
+  }
+
+  .welcome-cta,
+  .welcome-pill {
+    transition: none;
   }
 }
