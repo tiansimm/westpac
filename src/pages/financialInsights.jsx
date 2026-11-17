@@ -21,22 +21,60 @@ const transactions = [
 const subscriptions = [
   {
     name: 'Netflix',
-    detail: 'No activity in 30 days. Still watching?',
+    category: 'Video streaming',
+    detail: 'Premium plan',
     amount: 25.99,
     icon: '🎬',
+    billingCycle: 'Monthly',
+    startDate: '12 Mar 2026',
+    subscriptionTime: null,
+    lastPaymentDate: '13 Nov 2026',
+    lastPaymentTime: null,
+    nextBillingDate: '12 Dec 2026',
+    status: 'Active',
     warning: true
   },
   {
     name: 'Spotify',
-    detail: 'Music streaming · Monthly',
+    category: 'Music streaming',
+    detail: 'Premium plan',
     amount: 13.99,
-    icon: '🎵'
+    icon: '🎵',
+    billingCycle: 'Monthly',
+    startDate: '5 Jan 2026',
+    subscriptionTime: null,
+    lastPaymentDate: null,
+    lastPaymentTime: null,
+    nextBillingDate: '5 Dec 2026',
+    status: 'Active'
+  },
+  {
+    name: 'Apple Music',
+    category: 'Music streaming',
+    detail: 'Individual plan',
+    amount: 12.99,
+    icon: '🎧',
+    billingCycle: 'Monthly',
+    startDate: '18 Aug 2026',
+    subscriptionTime: null,
+    lastPaymentDate: null,
+    lastPaymentTime: null,
+    nextBillingDate: '18 Dec 2026',
+    status: 'Active'
   },
   {
     name: 'iCloud+',
-    detail: 'Cloud storage · Monthly',
-    amount: 28.99,
-    icon: '☁️'
+    category: 'Cloud storage',
+    detail: 'Cloud storage plan',
+    amount: 2.99,
+    icon: '☁️',
+    billingCycle: 'Monthly',
+    startDate: '20 Feb 2026',
+    subscriptionTime: null,
+    lastPaymentDate: null,
+    lastPaymentTime: null,
+    nextBillingDate: '20 Dec 2026',
+    status: 'Active'
   }
 ]
 
@@ -65,6 +103,50 @@ function FinancialInsights({ onBack, onAssistant }) {
   const subscriptionTotal = subscriptions.reduce(
     (total, subscription) => total + subscription.amount,
     0
+  )
+
+  const annualSubscriptionTotal = subscriptionTotal * 12
+
+  // Group subscriptions by category
+  const subscriptionGroups = Object.values(
+    subscriptions.reduce((groups, subscription) => {
+      if (!groups[subscription.category]) {
+        groups[subscription.category] = []
+      }
+
+      groups[subscription.category].push(subscription)
+
+      return groups
+    }, {})
+  )
+
+  // Identify categories containing multiple subscriptions
+  const overlappingSubscriptions = subscriptionGroups.filter(
+    group => group.length > 1
+  )
+
+  // Calculate possible savings if the customer keeps only one
+  const potentialSavings = overlappingSubscriptions.reduce(
+    (total, group) => {
+      const groupTotal = group.reduce(
+        (sum, item) => sum + item.amount,
+        0
+      )
+
+      const highestPrice = Math.max(
+        ...group.map(item => item.amount)
+      )
+
+      const lowestPrice = Math.min(
+        ...group.map(item => item.amount)
+      )
+
+      return {
+        minimum: total.minimum + groupTotal - highestPrice,
+        maximum: total.maximum + groupTotal - lowestPrice
+      }
+    },
+    { minimum: 0, maximum: 0 }
   )
 
   return (
@@ -211,57 +293,250 @@ function FinancialInsights({ onBack, onAssistant }) {
         </small>
       </section>
 
-      {/* Subscriptions */}
-      <section className="budget-section">
+      {/* AI Subscription Manager */}
+      <section className="budget-section subscription-manager">
+
         <div className="budget-section-heading">
           <div>
             <p className="eyebrow">RECURRING PAYMENTS</p>
-            <h2>Your subscriptions</h2>
+            <h2>Subscription Manager</h2>
             <p className="budget-section-description">
-              Keep track of regular payments and monthly commitments.
+              Track recurring payments, identify overlapping services
+              and discover opportunities to save.
             </p>
           </div>
         </div>
 
-        <div className="subscriptions-card">
-          <div className="subscriptions-total">
-            <div>
-              <span>Estimated monthly subscriptions</span>
-              <h3>${subscriptionTotal.toFixed(2)}</h3>
-            </div>
-            <span className="subscription-count">
-              {subscriptions.length} subscriptions
-            </span>
+        {/* Subscription summary */}
+        <div className="subscription-overview">
+
+          <div className="subscription-overview-card">
+            <span>Monthly subscriptions</span>
+            <h3>${subscriptionTotal.toFixed(2)}</h3>
+            <small>Estimated recurring cost</small>
           </div>
 
+          <div className="subscription-overview-card">
+            <span>Annual subscriptions</span>
+            <h3>${annualSubscriptionTotal.toFixed(2)}</h3>
+            <small>Estimated yearly cost</small>
+          </div>
+
+          <div className="subscription-overview-card">
+            <span>Potential monthly savings</span>
+            <h3>
+              ${potentialSavings.minimum.toFixed(2)}
+              {potentialSavings.maximum > potentialSavings.minimum
+                ? `–$${potentialSavings.maximum.toFixed(2)}`
+                : ''}
+            </h3>
+            <small>By reviewing overlapping services</small>
+          </div>
+
+        </div>
+
+        {/* Overlap detection */}
+        <div className="subscription-analysis">
+
+          <div className="subscription-analysis-heading">
+            <span className="subscription-analysis-icon">✦</span>
+            <div>
+              <p className="eyebrow">SUBSCRIPTION VALIDATION</p>
+              <h3>Potential subscription overlaps</h3>
+            </div>
+          </div>
+
+          {overlappingSubscriptions.length > 0 ? (
+            overlappingSubscriptions.map((group) => {
+
+              const categoryTotal = group.reduce(
+                (sum, item) => sum + item.amount,
+                0
+              )
+
+              const cheapest = Math.min(
+                ...group.map(item => item.amount)
+              )
+
+              const mostExpensive = Math.max(
+                ...group.map(item => item.amount)
+              )
+
+              const minimumSaving = categoryTotal - mostExpensive
+              const maximumSaving = categoryTotal - cheapest
+
+              return (
+                <div
+                  className="subscription-overlap-card"
+                  key={group[0].category}
+                >
+
+                  <div className="overlap-top">
+                    <div>
+                      <span className="overlap-label">
+                        POSSIBLE OVERLAP
+                      </span>
+                      <h4>{group[0].category}</h4>
+                    </div>
+
+                    <span className="overlap-count">
+                      {group.length} services
+                    </span>
+                  </div>
+
+                  <div className="overlap-services">
+
+                    {group.map((subscription) => (
+                      <div
+                        className="overlap-service"
+                        key={subscription.name}
+                      >
+                        <span className="subscription-icon">
+                          {subscription.icon}
+                        </span>
+
+                        <div className="subscription-details">
+                          <strong>{subscription.name}</strong>
+                          <span>{subscription.detail}</span>
+                        </div>
+
+                        <strong>
+                          ${subscription.amount.toFixed(2)}/mo
+                        </strong>
+                      </div>
+                    ))}
+
+                  </div>
+
+                  <div className="overlap-recommendation">
+                    <strong>✦ Suggested action</strong>
+
+                    <p>
+                      You have multiple subscriptions in the same
+                      category. If you only need one service,
+                      consider keeping your preferred option.
+                    </p>
+
+                    <div className="overlap-saving">
+                      <span>Potential monthly savings</span>
+                      <strong>
+                        ${minimumSaving.toFixed(2)}
+                        {maximumSaving > minimumSaving
+                          ? ` – $${maximumSaving.toFixed(2)}`
+                          : ''}
+                      </strong>
+                    </div>
+                  </div>
+
+                </div>
+              )
+            })
+          ) : (
+            <p className="no-overlap-message">
+              No overlapping subscription categories detected.
+            </p>
+          )}
+
+          <p className="subscription-disclaimer">
+            Similar categories do not necessarily mean duplicate
+            subscriptions. Review your usage and preferences before
+            cancelling a service.
+          </p>
+
+        </div>
+
+        {/* Individual subscription details */}
+        <div className="subscription-list-heading">
+          <div>
+            <p className="eyebrow">PAYMENT HISTORY & DETAILS</p>
+            <h3>All subscriptions</h3>
+          </div>
+
+          <span>{subscriptions.length} services</span>
+        </div>
+
+        <div className="subscription-list">
+
           {subscriptions.map((subscription) => (
-            <div className="subscription-item" key={subscription.name}>
-              <span className="subscription-icon">
-                {subscription.icon}
-              </span>
+            <div
+              className="subscription-detail-card"
+              key={subscription.name}
+            >
 
-              <div className="subscription-details">
-                <strong>{subscription.name}</strong>
-                <span>{subscription.detail}</span>
+              <div className="subscription-detail-header">
 
-                {subscription.warning && (
-                  <span className="subscription-warning">
-                    ⚠ Review this subscription
-                  </span>
-                )}
+                <span className="subscription-icon">
+                  {subscription.icon}
+                </span>
+
+                <div className="subscription-details">
+                  <strong>{subscription.name}</strong>
+                  <span>{subscription.category} · {subscription.detail}</span>
+                </div>
+
+                <div className="subscription-price">
+                  <strong>
+                    ${subscription.amount.toFixed(2)}
+                  </strong>
+                  <span>/month</span>
+                </div>
+
               </div>
 
-              <strong>${subscription.amount.toFixed(2)}/month</strong>
+              <div className="subscription-metadata">
+
+                <div>
+                  <span>Subscription started</span>
+                  <strong>{subscription.startDate}</strong>
+                  <small>
+                    {subscription.subscriptionTime || 'Time unavailable'}
+                  </small>
+                </div>
+
+                <div>
+                  <span>Last payment</span>
+                  <strong>
+                    {subscription.lastPaymentDate || 'Not available'}
+                  </strong>
+                  <small>
+                    {subscription.lastPaymentTime || 'Time unavailable'}
+                  </small>
+                </div>
+
+                <div>
+                  <span>Next billing date</span>
+                  <strong>{subscription.nextBillingDate}</strong>
+                  <small>{subscription.billingCycle} billing</small>
+                </div>
+
+                <div>
+                  <span>Subscription status</span>
+                  <strong className="subscription-status">
+                    {subscription.status}
+                  </strong>
+                  <small>Sample account record</small>
+                </div>
+
+              </div>
+
+              {subscription.warning && (
+                <div className="subscription-warning-box">
+                  ⚠ This subscription has been flagged for review.
+                </div>
+              )}
+
             </div>
           ))}
 
-          <button
-            className="subscription-ai-button"
-            onClick={onAssistant}
-          >
-            ✦ Review with AI Assistant →
-          </button>
         </div>
+
+        <button
+          className="subscription-ai-button"
+          onClick={onAssistant}
+        >
+          ✦ Ask AI to review my subscriptions →
+        </button>
+
       </section>
 
       {/* Savings planner */}

@@ -3,7 +3,6 @@ import { useState } from 'react'
 import '../styles/dashboard.css'
 
 function Dashboard({ onInsights, onJourney, onFraud, onAssistant }) {
-  const [showNotifications, setShowNotifications] = useState(false)
   const [showOverlapReminder, setShowOverlapReminder] = useState(true)
   const [highlightOverlappingExpenses, setHighlightOverlappingExpenses] = useState(false)
 
@@ -67,28 +66,6 @@ function Dashboard({ onInsights, onJourney, onFraud, onAssistant }) {
           <p className="description">
             Here's your financial overview. Let's make your money work for you.
           </p>
-        </div>
-
-        <div className="notification-wrapper">
-          <button
-            className="notification-button"
-            onClick={() => setShowNotifications(!showNotifications)}
-            aria-label="Notifications"
-          >
-            ♧
-            <span className="notification-dot"></span>
-          </button>
-
-          {showNotifications && (
-            <div className="notification-panel">
-              <h3>Notifications</h3>
-              <p><strong>Spending update</strong></p>
-              <span>Your November spending is within your budget.</span>
-              <hr />
-              <p><strong>Savings progress</strong></p>
-              <span>Your Japan holiday goal is 40% complete.</span>
-            </div>
-          )}
         </div>
       </div>
 
