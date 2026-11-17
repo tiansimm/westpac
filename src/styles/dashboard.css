@@ -79,6 +79,142 @@
   line-height: 1.5;
 }
 
+/* Grocery campaign offer */
+
+.grocery-offer-dialog {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 28px;
+  color: #37424A;
+  background: white;
+  border: 1px solid #eeeeee;
+  border-radius: 18px;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.2);
+}
+
+.grocery-offer-dialog::backdrop {
+  background: rgba(26, 31, 35, 0.55);
+}
+
+.grocery-offer-dialog h2 {
+  margin: 12px 0;
+  color: #6c1a54;
+  font-size: 27px;
+  line-height: 1.2;
+}
+
+.grocery-offer-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.grocery-offer-close {
+  width: 34px;
+  height: 34px;
+  color: #686868;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.grocery-offer-badge {
+  display: inline-block;
+  margin: 0;
+  padding: 6px 9px;
+  color: #ad0023;
+  background: #fff0f1;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.grocery-offer-description {
+  margin: 0 0 16px;
+  color: #686868;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.grocery-offer-reason {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #f7f3f6;
+  border-radius: 12px;
+}
+
+.grocery-offer-reason strong {
+  color: #6c1a54;
+  font-size: 13px;
+}
+
+.grocery-offer-reason p {
+  margin: 6px 0 0;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.grocery-offer-activate,
+.grocery-offer-dismiss {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.grocery-offer-activate {
+  color: white;
+  background: #D5002B;
+  border: 1px solid #D5002B;
+}
+
+.grocery-offer-activate:hover {
+  background: #ad0023;
+}
+
+.grocery-offer-dismiss {
+  margin-top: 9px;
+  color: #37424A;
+  background: white;
+  border: 1px solid #dddddd;
+}
+
+.grocery-offer-disclaimer {
+  margin: 14px 0 0;
+  color: #777;
+  font-size: 11px;
+  text-align: center;
+}
+
+.grocery-offer-feedback {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: -12px 0 24px;
+  padding: 12px 16px;
+  color: #185b40;
+  background: #eaf6f0;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.grocery-offer-feedback button {
+  flex-shrink: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font-size: 19px;
+}
+
 /* Account balance */
 
 .home-balance-card {

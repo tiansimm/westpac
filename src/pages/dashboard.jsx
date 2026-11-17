@@ -1,19 +1,43 @@
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import '../styles/dashboard.css'
+
+const transactions = [
+  { name: 'Woolworths', category: 'Groceries', date: 'Today, 10:24 AM', amount: '-$85.40', icon: '🛒' },
+  { name: 'Spotify', category: 'Music streaming', date: 'Today, 9:40 AM', amount: '-$11.99', icon: '🎵' },
+  { name: 'Cafe Brisbane', category: 'Dining & cafes', date: 'Today, 8:15 AM', amount: '-$24.50', icon: '☕' },
+  { name: 'Apple Music', category: 'Music streaming', date: 'Yesterday', amount: '-$10.99', icon: '🎵' },
+  { name: 'Translink', category: 'Transport', date: 'Yesterday', amount: '-$12.80', icon: '🚆' },
+  { name: 'Salary payment', category: 'Income', date: '14 Nov 2026', amount: '+$3,000.00', icon: '💰' },
+]
 
 function Dashboard({ onInsights, onJourney, onFraud, onAssistant }) {
   const [showOverlapReminder, setShowOverlapReminder] = useState(true)
   const [highlightOverlappingExpenses, setHighlightOverlappingExpenses] = useState(false)
+  const [groceryOfferDismissed, setGroceryOfferDismissed] = useState(false)
+  const [groceryOfferFeedback, setGroceryOfferFeedback] = useState('')
+  const groceryOfferDialog = useRef(null)
+  const hasGroceryPurchase = transactions.some(
+    (transaction) => transaction.category.toLowerCase() === 'groceries'
+      && transaction.amount.startsWith('-')
+  )
+  const showGroceryOffer = hasGroceryPurchase && !groceryOfferDismissed
 
-  const transactions = [
-    { name: 'Woolworths', category: 'Groceries', date: 'Today, 10:24 AM', amount: '-$85.40', icon: '🛒' },
-    { name: 'Spotify', category: 'Music streaming', date: 'Today, 9:40 AM', amount: '-$11.99', icon: '🎵' },
-    { name: 'Cafe Brisbane', category: 'Dining & cafes', date: 'Today, 8:15 AM', amount: '-$24.50', icon: '☕' },
-    { name: 'Apple Music', category: 'Music streaming', date: 'Yesterday', amount: '-$10.99', icon: '🎵' },
-    { name: 'Translink', category: 'Transport', date: 'Yesterday', amount: '-$12.80', icon: '🚆' },
-    { name: 'Salary payment', category: 'Income', date: '14 Nov 2026', amount: '+$3,000.00', icon: '💰' },
-  ]
+  useEffect(() => {
+    const dialog = groceryOfferDialog.current
+
+    if (showGroceryOffer && !dialog.open) {
+      dialog.showModal()
+    } else if (!showGroceryOffer && dialog.open) {
+      dialog.close()
+    }
+  }, [showGroceryOffer])
+
+  const dismissGroceryOffer = () => setGroceryOfferDismissed(true)
+  const activateGroceryOffer = () => {
+    setGroceryOfferDismissed(true)
+    setGroceryOfferFeedback('Demo offer activated. No real cashback will be applied.')
+  }
 
   const overlappingExpenses = transactions.reduce((groups, transaction) => {
     if (transaction.amount.startsWith('-')) {
@@ -68,6 +92,56 @@ function Dashboard({ onInsights, onJourney, onFraud, onAssistant }) {
           </p>
         </div>
       </div>
+
+      {groceryOfferFeedback && (
+        <div className="grocery-offer-feedback" role="status">
+          <span>{groceryOfferFeedback}</span>
+          <button onClick={() => setGroceryOfferFeedback('')} aria-label="Dismiss offer confirmation">
+            ×
+          </button>
+        </div>
+      )}
+
+      <dialog
+        className="grocery-offer-dialog"
+        ref={groceryOfferDialog}
+        aria-labelledby="grocery-offer-title"
+        onCancel={dismissGroceryOffer}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) dismissGroceryOffer()
+        }}
+      >
+        <div className="grocery-offer-dialog-header">
+          <span aria-hidden="true">🛒</span>
+          <button
+            className="grocery-offer-close"
+            onClick={dismissGroceryOffer}
+            aria-label="Close grocery offer"
+          >
+            ×
+          </button>
+        </div>
+        <p className="grocery-offer-badge">CAMPAIGN OFFER · DEMO</p>
+        <h2 id="grocery-offer-title">Earn 5% back on groceries</h2>
+        <p className="grocery-offer-description">
+          Use your eligible card at supermarkets to earn up to $20 cashback.
+          Terms would apply to a live campaign.
+        </p>
+        <div className="grocery-offer-reason">
+          <strong>Why you’re seeing this</strong>
+          <p>
+            A recent demo transaction was categorised as Groceries.
+            This prototype uses fictional data and does not target real spending.
+          </p>
+        </div>
+        <button className="grocery-offer-activate" onClick={activateGroceryOffer}>
+          Activate demo offer
+        </button>
+        <button className="grocery-offer-dismiss" onClick={dismissGroceryOffer}>
+          Not now
+        </button>
+        <p className="grocery-offer-disclaimer">No real offer or cashback is applied.</p>
+      </dialog>
 
       {/* Account overview */}
       <section className="home-balance-card">
