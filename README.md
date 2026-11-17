@@ -27,9 +27,15 @@ A personal finance companion prototype built for the Westpac Project Future comp
 npm install
 ```
 
-### 3. Add your Gemini API key
+### 3. AI setup: choose one option
 
-The AI Assistant needs a Google Gemini API key. Without one, the app still runs, but the assistant falls back to scripted demo replies and shows **● Demo mode**.
+**Option A: use the team's shared AI (no key needed, recommended for teammates)**
+
+When the app is deployed to Vercel (see [Deploying](#deploying-so-everyone-gets-the-real-ai)) and its URL is pasted into `SHARED_API_URL` in [`vite.config.js`](vite.config.js), you don't need to do anything. Run `npm run dev` and the assistant uses the team's hosted AI automatically. The terminal shows `[ai] No local key, forwarding /api/chat to ...`. Skip to step 4.
+
+**Option B: use your own Gemini API key**
+
+Use this if you're the person who maintains the deployment, or if you want to test prompt changes locally. With no key and no shared URL, the app still runs, but the assistant falls back to scripted demo replies and shows **● Demo mode**.
 
 1. **Get a free key.** Go to <https://aistudio.google.com/apikey>, sign in with a Google account and click **Create API key**. Copy the key.
 
@@ -82,15 +88,52 @@ Go to **AI Assistant** and ask a question, such as *"Can I cancel my Netflix sub
 ## How the AI integration works
 
 ```
-Browser (aiAssistant.jsx)  ──POST /api/chat──▶  Vite server (server/geminiPlugin.js)  ──▶  Google Gemini API
-                                                 reads GEMINI_API_KEY from .env.local
+                               ┌─ has GEMINI_API_KEY ──▶ Google Gemini API
+Browser ──POST /api/chat──▶ Vite dev server ┤
+(aiAssistant.jsx)          (geminiPlugin.js)└─ no key ──▶ Shared Vercel API (api/chat.js) ──▶ Google Gemini API
+                                                          (team key stored in Vercel)
+
+Deployed site:  Browser ──POST /api/chat──▶ Vercel function (api/chat.js) ──▶ Google Gemini API
 ```
 
-- [`server/geminiPlugin.js`](server/geminiPlugin.js) adds a `POST /api/chat` endpoint to the Vite dev and preview servers. It sends the conversation to Gemini with a system prompt that contains Olivia's fictional financial data and the safety rules. To change the assistant's tone, rules or data, edit `SYSTEM_PROMPT` in that file.
-- [`src/pages/aiAssistant.jsx`](src/pages/aiAssistant.jsx) is the chat UI. It calls `/api/chat` and falls back to the scripted replies in `getAssistantReply()` if the request fails.
-- [`vite.config.js`](vite.config.js) loads the env vars and registers the plugin.
+| File | Purpose |
+| --- | --- |
+| [`server/chatHandler.js`](server/chatHandler.js) | Shared logic: the system prompt (Olivia's demo data, topics, safety rules) and the Gemini call. Gemini returns a reply **plus 3 follow-up suggestions**. Edit `SYSTEM_PROMPT` here to change the assistant. |
+| [`server/geminiPlugin.js`](server/geminiPlugin.js) | Adds `/api/chat` to the local Vite server. Uses your key if you have one, otherwise forwards to the shared URL. |
+| [`api/chat.js`](api/chat.js) | Vercel serverless function for the deployed site. |
+| [`src/pages/aiAssistant.jsx`](src/pages/aiAssistant.jsx) | Chat UI. Edit the `categories` list at the top to add topics or suggested questions. If the AI is unreachable, it falls back to scripted replies. |
 
-**Deployment note:** `/api/chat` only exists while `npm run dev` or `npm run preview` is running. If you deploy the built static files (`dist/`) to a host, move the endpoint to a serverless function (for example on Vercel or Netlify) and set `GEMINI_API_KEY` in the host's environment settings.
+### Chatbot features
+
+- **Topic categories:** My money, Savings goals, Products & services, Security & fraud, and App help (troubleshooting). Each has its own suggested questions, on the welcome screen and in the **☰ Topics** panel during a chat.
+- **AI follow-up suggestions:** after every answer, Gemini suggests 3 relevant next questions as clickable chips.
+- **Action buttons:** the AI can attach up to 2 shortcuts to a reply (for example "Go to Fraud Protection" or "Open Savings Goals") that take the customer straight to the right screen.
+- **Urgent alerts:** possible fraud, scams or a lost card get a highlighted "Act now" banner.
+- **Talk to a person:** a human-handoff option in the chat header, which the AI also offers when self-help isn't working.
+- **Readable answers:** **bold** text, numbered steps and bullet lists are formatted.
+- **Feedback and controls:** 👍/👎 on each answer, Copy, and "Try again with AI" on offline replies.
+- **Saved conversations:** chats are kept in the browser (`localStorage`), so they survive moving between screens, and "New conversation" moves the old one into *Previous conversations*.
+- **Safety rules:** the assistant never asks for PINs or passwords, doesn't quote real rates or fees as fact, and points urgent fraud issues to the bank's official channels.
+
+## Deploying so everyone gets the real AI
+
+Deploy once to [Vercel](https://vercel.com) (free). The API key lives only in Vercel's settings, so teammates and judges never need it.
+
+1. Push this repo to GitHub.
+2. On vercel.com, sign in with GitHub, click **Add New → Project** and import the repo. Vercel detects Vite automatically, so keep the default build settings.
+3. Before clicking **Deploy**, open **Environment Variables** and add:
+   - `GEMINI_API_KEY` = your key
+   - `GEMINI_MODEL` = `gemini-3.8-flash` (optional)
+4. Click **Deploy**. You'll get a URL like `https://your-project.vercel.app`, where the full app, including the real AI, works for anyone.
+5. To let teammates' local `npm run dev` use the shared AI too, paste the endpoint into [`vite.config.js`](vite.config.js) and commit it:
+
+   ```js
+   const SHARED_API_URL = 'https://your-project.vercel.app/api/chat'
+   ```
+
+If you change `GEMINI_API_KEY` in Vercel later, redeploy for it to take effect.
+
+> **Note:** the shared endpoint is public, so anyone who finds the URL could use your Gemini quota. That's fine for a competition prototype, but delete or rotate the key when the competition ends.
 
 ## Troubleshooting
 
@@ -113,8 +156,11 @@ Browser (aiAssistant.jsx)  ──POST /api/chat──▶  Vite server (server/ge
 ## Project structure
 
 ```
+├── api/
+│   └── chat.js             # Vercel serverless /api/chat (deployed site)
 ├── server/
-│   └── geminiPlugin.js     # /api/chat endpoint (Gemini, server-side)
+│   ├── chatHandler.js      # Shared Gemini logic + system prompt
+│   └── geminiPlugin.js     # Local /api/chat (dev server)
 ├── src/
 │   ├── App.jsx             # Navigation and page switching
 │   ├── pages/              # One component per page

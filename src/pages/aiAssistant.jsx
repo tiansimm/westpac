@@ -1,38 +1,172 @@
-
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import '../styles/aiAssistant.css'
 
-const suggestedQuestions = [
-  {
-    icon: '🎯',
-    title: 'Help me reach my holiday goal',
-    question: 'How long until I reach my Japan holiday goal?'
-  },
-  {
-    icon: '📱',
-    title: 'Find subscriptions I could cut',
-    question: 'Which subscriptions could I cut?'
-  },
-  {
-    icon: '🔒',
-    title: 'How do I lock my card?',
-    question: 'How do I lock my card?'
-  }
-]
+// Buttons the AI can attach to a reply. Ids match the page ids in App.jsx,
+// plus "contact" for a human handoff.
+const ACTIONS = {
+  insights: { icon: '▥', label: 'View Smart Budgeting' },
+  journey: { icon: '◎', label: 'Open Savings Goals' },
+  fraud: { icon: '▣', label: 'Go to Fraud Protection' },
+  accounts: { icon: '▤', label: 'View Accounts' },
+  dashboard: { icon: '⌂', label: 'Go to Home' },
+  contact: { icon: '☎', label: 'Talk to a person' }
+}
 
-const previousConversations = [
+const HANDOFF_MESSAGE = `In the real app, this would connect you with a banking specialist through secure chat, with this conversation attached so you don't have to repeat yourself.
+
+- **Urgent (fraud, lost or stolen card):** call the number on the back of your card, available 24/7.
+- **General enquiries:** use secure messaging in the official app, or visit a branch.
+
+This is a prototype, so no one will actually be contacted.`
+
+// Example conversations shown until the user has saved some of their own.
+const exampleConversations = [
   {
     title: 'Making room for a holiday',
-    detail: 'Yesterday · Savings and spending',
+    detail: 'Example · Savings and spending',
     question: 'Help me make more room in my budget for my holiday.'
   },
   {
     title: 'Understanding my spending',
-    detail: '14 November · Budget planning',
+    detail: 'Example · Budget planning',
     question: 'Where did most of my money go?'
   }
 ]
 
+const CURRENT_CHAT_KEY = 'cashflowiq.chat.current'
+const HISTORY_KEY = 'cashflowiq.chat.history'
+
+function loadJson(key, fallback) {
+  try {
+    const value = localStorage.getItem(key)
+    return value ? JSON.parse(value) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+function saveJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // Storage unavailable (private mode etc.): chat still works, just isn't saved.
+  }
+}
+
+// Only ever called from event handlers (archiving a chat), never during render.
+function currentTimestamp() {
+  return Date.now()
+}
+
+// Renders **bold**, numbered lists and "- " bullet lists from the AI's reply.
+function renderInline(text) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') && part.length > 4
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part
+  )
+}
+
+function FormattedText({ text }) {
+  const blocks = []
+  let list = null
+
+  for (const line of text.split('\n')) {
+    const ordered = line.match(/^\s*\d+[.)]\s+(.*)/)
+    const bullet = line.match(/^\s*[-•*]\s+(.*)/)
+
+    if (ordered || bullet) {
+      const type = ordered ? 'ol' : 'ul'
+      if (!list || list.type !== type) {
+        list = { type, items: [] }
+        blocks.push(list)
+      }
+      list.items.push((ordered || bullet)[1])
+    } else {
+      list = null
+      if (line.trim()) blocks.push({ type: 'p', text: line })
+    }
+  }
+
+  return blocks.map((block, i) => {
+    if (block.type === 'p') return <p key={i}>{renderInline(block.text)}</p>
+    const List = block.type
+    return (
+      <List key={i}>
+        {block.items.map((item, j) => <li key={j}>{renderInline(item)}</li>)}
+      </List>
+    )
+  })
+}
+
+// Prompt suggestions grouped by topic. Add or edit questions here.
+const categories = [
+  {
+    id: 'money',
+    icon: '💰',
+    label: 'My money',
+    questions: [
+      'How much budget do I have left?',
+      'Where did most of my money go?',
+      'Which subscriptions could I cut?',
+      'How can I save an extra $2,000 this year?'
+    ]
+  },
+  {
+    id: 'goals',
+    icon: '🎯',
+    label: 'Savings goals',
+    questions: [
+      'How long until I reach my Japan holiday goal?',
+      'What if I saved $500 a month instead?',
+      'How do I build an emergency fund?'
+    ]
+  },
+  {
+    id: 'products',
+    icon: '🏦',
+    label: 'Products & services',
+    questions: [
+      "What's the difference between a savings account and a term deposit?",
+      'How does an offset account work?',
+      'Which type of credit card suits me?',
+      'How do I send money overseas?',
+      'What is PayID and how do I set it up?'
+    ]
+  },
+  {
+    id: 'security',
+    icon: '🔒',
+    label: 'Security & fraud',
+    questions: [
+      "I don't recognise a transaction",
+      'How do I lock my card?',
+      'I got a suspicious text claiming to be my bank',
+      'Why was the $850 payment flagged?'
+    ]
+  },
+  {
+    id: 'help',
+    icon: '🛠️',
+    label: 'App help',
+    questions: [
+      "I can't log in to the app",
+      "The app keeps crashing or won't load",
+      "My payment didn't go through",
+      'Where can I find my statements?',
+      "I'm not getting notifications"
+    ]
+  }
+]
+
+const fallbackSuggestions = [
+  'How much budget do I have left?',
+  'How do I lock my card?',
+  "I can't log in to the app"
+]
+
+
+// Scripted backup replies, used only when the AI service can't be reached.
 function getAssistantReply(question) {
   const q = question.toLowerCase()
 
@@ -85,44 +219,171 @@ function getAssistantReply(question) {
     return "Your monthly budget is $4,800, and you've spent $4,150 so far. That leaves $650 remaining, meaning you've used approximately 86% of your budget. Keep an eye on flexible spending for the rest of the month."
   }
 
-  return "I'm here to help you understand your finances. I can analyse your spending, review subscriptions, help plan savings goals and explain simulated security alerts. What would you like to explore?"
+  return "Sorry, the AI assistant is offline right now, so I can only answer a few set questions about your budget, spending, subscriptions, savings goal and security alerts. Please try again in a moment, or pick one of the suggested topics."
 }
 
-function AIAssistant() {
-  const [messages, setMessages] = useState([])
+
+// Offline backup: pick a relevant screen and urgency from keywords.
+function getFallbackExtras(question) {
+  const q = question.toLowerCase()
+  const urgent = /fraud|scam|stolen|lost|recognise|suspicious/.test(q)
+
+  let actions = ['contact']
+  if (/fraud|suspicious|flagged|scam|recognise|lock|card/.test(q)) actions = ['fraud']
+  else if (/goal|japan|holiday|save|saving/.test(q)) actions = ['journey']
+  else if (/spend|budget|subscription|money go|expense/.test(q)) actions = ['insights']
+  else if (/statement|account|balance/.test(q)) actions = ['accounts']
+
+  return { actions, urgent }
+}
+
+function CategoryTabs({ activeId, onSelect }) {
+  return (
+    <div className="ai-category-tabs" role="tablist">
+      {categories.map(category => (
+        <button
+          key={category.id}
+          role="tab"
+          aria-selected={activeId === category.id}
+          className={`ai-category-tab ${activeId === category.id ? 'active' : ''}`}
+          onClick={() => onSelect(category.id)}
+        >
+          <span aria-hidden="true">{category.icon}</span>
+          {category.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function AIAssistant({ onNavigate }) {
+  const [messages, setMessages] = useState(() => loadJson(CURRENT_CHAT_KEY, []))
+  const [history, setHistory] = useState(() => loadJson(HISTORY_KEY, []))
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [mode, setMode] = useState('Gemini AI')
+  const [activeCategory, setActiveCategory] = useState('money')
+  const [showTopics, setShowTopics] = useState(false)
+  const [copiedIndex, setCopiedIndex] = useState(null)
+  const messagesEndRef = useRef(null)
 
-  const sendMessage = async (question) => {
-    const trimmedQuestion = question.trim()
-    if (!trimmedQuestion || isLoading) return
+  // Save the chat so it survives navigating to another screen and back.
+  useEffect(() => saveJson(CURRENT_CHAT_KEY, messages), [messages])
+  useEffect(() => saveJson(HISTORY_KEY, history), [history])
 
-    const history = [...messages, { role: 'user', text: trimmedQuestion }]
-    setMessages(history)
-    setInput('')
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [messages, isLoading])
+
+  const currentCategory = categories.find(c => c.id === activeCategory)
+
+  // Ask the AI to answer the conversation so far (which must end with a user message).
+  const requestReply = async (conversation) => {
+    setMessages(conversation)
     setIsLoading(true)
 
-    let reply
+    let answer
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history })
+        body: JSON.stringify({
+          messages: conversation.map(({ role, text }) => ({ role, text }))
+        })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
-      reply = data.reply
+      answer = {
+        text: data.reply,
+        suggestions: data.suggestions ?? [],
+        actions: data.actions ?? [],
+        urgent: Boolean(data.urgent)
+      }
       setMode('Gemini AI')
     } catch (err) {
       // Fall back to the scripted demo replies so the prototype still works offline.
-      console.warn('Gemini unavailable, using demo replies:', err.message)
-      reply = getAssistantReply(trimmedQuestion)
+      console.warn('AI unavailable, using demo replies:', err.message)
+      const question = conversation[conversation.length - 1].text
+      answer = {
+        text: getAssistantReply(question),
+        suggestions: fallbackSuggestions,
+        ...getFallbackExtras(question),
+        offline: true
+      }
       setMode('Demo mode')
     }
 
-    setMessages(current => [...current, { role: 'assistant', text: reply }])
+    setMessages([...conversation, { role: 'assistant', ...answer }])
     setIsLoading(false)
+  }
+
+  const sendMessage = (question) => {
+    const trimmedQuestion = question.trim()
+    if (!trimmedQuestion || isLoading) return
+
+    setInput('')
+    setShowTopics(false)
+    requestReply([...messages, { role: 'user', text: trimmedQuestion }])
+  }
+
+  const retry = (index) => {
+    if (isLoading) return
+    requestReply(messages.slice(0, index))
+  }
+
+  const talkToPerson = () => {
+    if (isLoading) return
+    setMessages(current => [
+      ...current,
+      { role: 'user', text: 'I want to talk to a person' },
+      { role: 'assistant', text: HANDOFF_MESSAGE, local: true }
+    ])
+  }
+
+  const handleAction = (id) => {
+    if (id === 'contact') talkToPerson()
+    else onNavigate?.(id)
+  }
+
+  const setFeedback = (index, value) => {
+    setMessages(current =>
+      current.map((m, i) =>
+        i === index ? { ...m, feedback: m.feedback === value ? undefined : value } : m
+      )
+    )
+  }
+
+  const copyMessage = async (index, text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 1500)
+    } catch {
+      // Clipboard blocked: ignore.
+    }
+  }
+
+  const archiveCurrentChat = () => {
+    const firstQuestion = messages.find(m => m.role === 'user')
+    if (!firstQuestion) return
+    const now = currentTimestamp()
+    setHistory(current => [
+      { id: now, title: firstQuestion.text, date: now, messages },
+      ...current
+    ].slice(0, 10))
+  }
+
+  const clearChat = () => {
+    archiveCurrentChat()
+    setMessages([])
+    setInput('')
+    setShowTopics(false)
+  }
+
+  const openConversation = (conversation) => {
+    archiveCurrentChat()
+    setHistory(current => current.filter(c => c.id !== conversation.id))
+    setMessages(conversation.messages)
   }
 
   const handleSubmit = (e) => {
@@ -130,10 +391,9 @@ function AIAssistant() {
     sendMessage(input)
   }
 
-  const clearChat = () => {
-    setMessages([])
-    setInput('')
-  }
+  const lastMessage = messages[messages.length - 1]
+  const followUps =
+    !isLoading && lastMessage?.role === 'assistant' ? lastMessage.suggestions ?? [] : []
 
   return (
     <div className="ai-page">
@@ -152,50 +412,89 @@ function AIAssistant() {
 
           <p className="ai-welcome-message">
             You have <strong>$650 left in your November budget.</strong>
-            {' '}I can help you plan ahead, save smarter or check a
-            security concern. What would you like to explore?
+            {' '}I can help with your money, explain our products and
+            services, check a security concern or fix a problem with the
+            app. Choose a topic below or ask me anything.
           </p>
 
           <div className="ai-question-section">
-            <h2>Explore with your AI assistant</h2>
+            <h2>Choose a topic</h2>
 
-            <div className="ai-question-grid">
-              {suggestedQuestions.map(item => (
+            <CategoryTabs activeId={activeCategory} onSelect={setActiveCategory} />
+
+            <div className="ai-topic-list">
+              {currentCategory.questions.map(question => (
                 <button
-                  className="ai-question-card"
-                  key={item.title}
-                  onClick={() => sendMessage(item.question)}
+                  className="ai-topic-option"
+                  key={question}
+                  onClick={() => sendMessage(question)}
                 >
-                  <span className="ai-question-icon">{item.icon}</span>
-                  <span>{item.title}</span>
-                  <span className="ai-question-arrow">↗</span>
+                  {question}
                 </button>
               ))}
             </div>
           </div>
 
+          <form className="ai-input-area ai-welcome-input" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Or type your own question..."
+              aria-label="Ask the AI assistant"
+            />
+            <button type="submit" disabled={!input.trim()}>
+              Send ↑
+            </button>
+          </form>
+
           <div className="ai-history-section">
-            <h2>Previous conversations</h2>
+            <div className="ai-history-header">
+              <h2>Previous conversations</h2>
+              {history.length > 0 && (
+                <button className="ai-text-button" onClick={() => setHistory([])}>
+                  Clear
+                </button>
+              )}
+            </div>
 
-            {previousConversations.map(item => (
-              <button
-                className="ai-history-item"
-                key={item.title}
-                onClick={() => sendMessage(item.question)}
-              >
-                <span className="ai-history-icon">◷</span>
-                <span className="ai-history-details">
-                  <strong>{item.title}</strong>
-                  <small>{item.detail}</small>
-                </span>
-                <span className="ai-history-arrow">›</span>
-              </button>
-            ))}
+            {history.length > 0
+              ? history.map(item => (
+                <button
+                  className="ai-history-item"
+                  key={item.id}
+                  onClick={() => openConversation(item)}
+                >
+                  <span className="ai-history-icon">◷</span>
+                  <span className="ai-history-details">
+                    <strong>{item.title}</strong>
+                    <small>
+                      {new Date(item.date).toLocaleDateString('en-AU', {
+                        day: 'numeric',
+                        month: 'long'
+                      })}
+                      {' · '}
+                      {item.messages.length} messages
+                    </small>
+                  </span>
+                  <span className="ai-history-arrow">›</span>
+                </button>
+              ))
+              : exampleConversations.map(item => (
+                <button
+                  className="ai-history-item"
+                  key={item.title}
+                  onClick={() => sendMessage(item.question)}
+                >
+                  <span className="ai-history-icon">◷</span>
+                  <span className="ai-history-details">
+                    <strong>{item.title}</strong>
+                    <small>{item.detail}</small>
+                  </span>
+                  <span className="ai-history-arrow">›</span>
+                </button>
+              ))}
           </div>
-
-          <p className="ai-start-hint">
-            Choose a question above to get started
-          </p>
 
         </section>
       ) : (
@@ -211,16 +510,16 @@ function AIAssistant() {
 
             <div className="ai-heading-actions">
               <span className="ai-status">● {mode}</span>
-              <button
-                className="ai-clear-button"
-                onClick={clearChat}
-              >
+              <button className="ai-clear-button" onClick={talkToPerson}>
+                ☎ Talk to a person
+              </button>
+              <button className="ai-clear-button" onClick={clearChat}>
                 New conversation
               </button>
             </div>
           </div>
 
-          <div className="ai-messages">
+          <div className="ai-messages" aria-live="polite">
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -230,21 +529,135 @@ function AIAssistant() {
                   {message.role === 'assistant' ? 'AI' : 'You'}
                 </div>
 
-                <div className="message-bubble">
-                  {message.text}
-                </div>
+                {message.role === 'user' ? (
+                  <div className="message-bubble">{message.text}</div>
+                ) : (
+                  <div className="ai-reply">
+                    <div className="message-bubble formatted">
+                      {message.urgent && (
+                        <div className="ai-urgent-banner" role="alert">
+                          <strong>⚠ Act now</strong>
+                          If your card or account may be at risk, call the
+                          number on the back of your card (24/7) or lock your
+                          card in the official app.
+                        </div>
+                      )}
+                      <FormattedText text={message.text} />
+                    </div>
+
+                    {message.actions?.length > 0 && (
+                      <div className="ai-action-buttons">
+                        {message.actions.filter(id => ACTIONS[id]).map(id => (
+                          <button
+                            key={id}
+                            className="ai-action-button"
+                            onClick={() => handleAction(id)}
+                          >
+                            <span aria-hidden="true">{ACTIONS[id].icon}</span>
+                            {ACTIONS[id].label} →
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {!message.local && (
+                      <div className="ai-message-tools">
+                        <button
+                          className={message.feedback === 'up' ? 'selected' : ''}
+                          onClick={() => setFeedback(index, 'up')}
+                          aria-label="Helpful"
+                          title="Helpful"
+                        >
+                          👍
+                        </button>
+                        <button
+                          className={message.feedback === 'down' ? 'selected' : ''}
+                          onClick={() => setFeedback(index, 'down')}
+                          aria-label="Not helpful"
+                          title="Not helpful"
+                        >
+                          👎
+                        </button>
+                        <button onClick={() => copyMessage(index, message.text)}>
+                          {copiedIndex === index ? 'Copied ✓' : 'Copy'}
+                        </button>
+                        {message.offline && (
+                          <button onClick={() => retry(index)}>
+                            ↻ Try again with AI
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {message.feedback === 'down' && (
+                      <p className="ai-feedback-note">
+                        Thanks for letting us know. Try rephrasing your question, or{' '}
+                        <button className="ai-text-button" onClick={talkToPerson}>
+                          talk to a person
+                        </button>.
+                      </p>
+                    )}
+                    {message.feedback === 'up' && (
+                      <p className="ai-feedback-note">Thanks for the feedback!</p>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
 
             {isLoading && (
               <div className="ai-message assistant">
                 <div className="message-avatar">AI</div>
-                <div className="message-bubble">Thinking…</div>
+                <div className="message-bubble ai-typing" aria-label="Assistant is typing">
+                  <span></span><span></span><span></span>
+                </div>
               </div>
             )}
+
+            {followUps.length > 0 && (
+              <div className="ai-suggestion-chips" aria-label="Suggested follow-up questions">
+                {followUps.map(suggestion => (
+                  <button
+                    key={suggestion}
+                    className="ai-suggestion-chip"
+                    onClick={() => sendMessage(suggestion)}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
 
+          {showTopics && (
+            <div className="ai-topic-panel">
+              <CategoryTabs activeId={activeCategory} onSelect={setActiveCategory} />
+              <div className="ai-suggestion-chips">
+                {currentCategory.questions.map(question => (
+                  <button
+                    key={question}
+                    className="ai-suggestion-chip"
+                    onClick={() => sendMessage(question)}
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <form className="ai-input-area" onSubmit={handleSubmit}>
+            <button
+              type="button"
+              className={`ai-topics-toggle ${showTopics ? 'active' : ''}`}
+              onClick={() => setShowTopics(open => !open)}
+              aria-expanded={showTopics}
+            >
+              ☰ Topics
+            </button>
+
             <input
               type="text"
               value={input}
@@ -263,8 +676,9 @@ function AIAssistant() {
 
       <p className="ai-disclaimer">
         AI demonstration: Responses are generated by Google Gemini
-        (or illustrative rules when offline) using fictional financial data. This prototype is not connected
-        to real Westpac accounts and does not provide financial advice.
+        (or illustrative rules when offline) using fictional financial data.
+        This prototype is not connected to real Westpac accounts and does
+        not provide financial advice.
       </p>
 
     </div>

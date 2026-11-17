@@ -73,6 +73,7 @@ function App() {
       return (
         <AIAssistant
           onBack={() => setCurrentPage('dashboard')}
+          onNavigate={setCurrentPage}
         />
       )
     }
