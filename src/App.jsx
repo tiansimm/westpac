@@ -238,6 +238,10 @@ function App() {
     return (
       <Welcome
         onGetStarted={() => setCurrentPage('dashboard')}
+        onNavigate={(page) => {
+          if (page === 'settings') setSettingsSection('notifications')
+          setCurrentPage(page)
+        }}
       />
     )
   }
